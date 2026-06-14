@@ -22,7 +22,10 @@
     .app-header p{font-size:11px;opacity:.7;margin-top:4px}
     .screen{display:none;flex:1;padding:20px 16px 48px}
     .screen.active{display:flex;flex-direction:column}
-    .login-card{background:#fff;border-radius:var(--radius);padding:28px 20px;box-shadow:var(--shadow-md);margin-top:4px}
+    .intro-banner{background:#fff;border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow-sm);margin-top:4px;margin-bottom:12px;border-right:4px solid var(--green-light)}
+    .intro-banner p{font-size:12.5px;line-height:2;color:var(--gray-800);text-align:right}
+    .intro-banner .intro-note{margin-top:12px;padding:10px 14px;background:var(--green-pale);border-radius:var(--radius-sm);font-size:12px;color:var(--green-dark);font-weight:600;line-height:1.8}
+    .login-card{background:#fff;border-radius:var(--radius);padding:28px 20px;box-shadow:var(--shadow-md);margin-top:0}
     .login-card h2{font-size:16px;font-weight:700;color:var(--green-dark);margin-bottom:6px}
     .subtitle{font-size:12px;color:var(--gray-500);margin-bottom:24px;line-height:1.7}
     .field-label{font-size:13px;font-weight:600;margin-bottom:8px;display:block}
@@ -81,6 +84,13 @@
 
 <!-- ① LOGIN -->
 <div class="screen active" id="screen-login">
+  <div class="intro-banner">
+    <p>يهدف هذا الاستبيان إلى تقييم مستوى الجودة وممارسات سلامة الغذاء داخل بيئة العمل. ونظراً لعملك في منشأة غذائية، فإن مشاركتك وإبداء رأيك حول بيئة العمل يُعد أمراً بالغ الأهمية للشركة، حيث سيتم استخدام النتائج ضمن دراسات البحث والتطوير.</p>
+    <div class="intro-note">
+      📋 يُرجى تخصيص جزء من وقتك لاستكمال هذا الاستطلاع من خلال قراءة جميع البنود بعناية، ثم وضع علامة (✓) أمام الخيار الذي يعكس الوضع الحالي في مكان عملك.
+    </div>
+  </div>
+
   <div class="login-card">
     <h2>تسجيل الدخول / Sign In</h2>
     <p class="subtitle">أدخل رقمك الوظيفي للمتابعة<br>Enter your Employee ID to continue</p>
