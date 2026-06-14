@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Safety Culture Survey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green-dark:#1a4731;--green-mid:#2d6a4f;--green-light:#52b788;
+      --green-pale:#d8f3dc;--white:#fff;--gray-50:#f8faf8;--gray-100:#eef2ee;
+      --gray-300:#c5d1c5;--gray-500:#6b7f6b;--gray-800:#1e2b1e;--danger:#d62828;
+      --shadow-sm:0 1px 4px rgba(0,0,0,.08);--shadow-md:0 4px 16px rgba(0,0,0,.12);
+      --radius:14px;--radius-sm:8px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh;display:flex;flex-direction:column}
+    .app-header{background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:#fff;padding:20px 20px 34px;text-align:center;position:relative}
+    .app-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:var(--gray-50);border-radius:20px 20px 0 0}
+    .header-icon{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px}
+    .app-header h1{font-size:17px;font-weight:700;line-height:1.4}
+    .app-header p{font-size:11px;opacity:.7;margin-top:4px}
+    .screen{display:none;flex:1;padding:20px 16px 48px}
+    .screen.active{display:flex;flex-direction:column}
+    .login-card{background:#fff;border-radius:var(--radius);padding:28px 20px;box-shadow:var(--shadow-md);margin-top:4px}
+    .login-card h2{font-size:16px;font-weight:700;color:var(--green-dark);margin-bottom:6px}
+    .subtitle{font-size:12px;color:var(--gray-500);margin-bottom:24px;line-height:1.7}
+    .field-label{font-size:13px;font-weight:600;margin-bottom:8px;display:block}
+    .field-input{width:100%;padding:14px 16px;border:2px solid var(--gray-300);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;text-align:center;color:var(--green-dark);transition:border-color .2s;outline:none;direction:ltr}
+    .field-input:focus{border-color:var(--green-light)}
+    .field-input::placeholder{font-size:13px;letter-spacing:0;color:var(--gray-300);font-weight:400}
+    .btn-primary{width:100%;margin-top:20px;padding:16px;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-primary:active{opacity:.9}
+    .btn-primary:disabled{opacity:.55;cursor:not-allowed}
+    .msg-box{margin-top:14px;padding:13px 14px;border-radius:var(--radius-sm);font-size:13px;text-align:center;display:none;line-height:1.6}
+    .msg-box.visible{display:block}
+    .msg-error{background:#fff0f0;border:1px solid #fcc;color:var(--danger)}
+    .msg-loading{background:var(--green-pale);color:var(--green-dark)}
+    .msg-done{background:#fffbe6;border:1px solid #ffe58f;color:#7c5e00}
+    .user-badge{background:#fff;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+    .user-avatar{width:40px;height:40px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .user-name{font-size:13px;font-weight:700;color:var(--green-dark)}
+    .user-dept{font-size:11px;color:var(--gray-500);margin-top:2px}
+    .progress-wrap{background:#fff;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+    .progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .progress-label{font-size:12px;color:var(--gray-500)}
+    .progress-count{font-size:12px;font-weight:700;color:var(--green-dark)}
+    .progress-bar-bg{height:6px;background:var(--gray-100);border-radius:99px;overflow:hidden}
+    .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--green-light),var(--green-mid));border-radius:99px;transition:width .4s ease;width:0%}
+    .section-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green-mid);padding:6px 4px 10px;margin-top:6px;border-bottom:2px solid var(--green-pale);margin-bottom:12px}
+    .question-card{background:#fff;border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm);border-right:4px solid var(--gray-100);transition:border-color .2s}
+    .question-card.answered{border-right-color:var(--green-light)}
+    .q-number{font-size:10px;font-weight:700;color:var(--green-mid);background:var(--green-pale);display:inline-block;padding:2px 8px;border-radius:99px;margin-bottom:8px}
+    .q-text-ar{font-size:13px;font-weight:600;line-height:1.7;margin-bottom:4px}
+    .q-text-en{font-size:11px;color:var(--gray-500);line-height:1.5;margin-bottom:12px;font-family:'Inter',sans-serif;direction:ltr;text-align:left}
+    .answer-row{display:flex;gap:8px}
+    .answer-btn{flex:1;padding:10px 4px;border:2px solid var(--gray-300);border-radius:var(--radius-sm);background:#fff;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;color:var(--gray-500);cursor:pointer;text-align:center;line-height:1.4}
+    .answer-btn:active{transform:scale(.95)}
+    .answer-btn.sel-yes{background:#d8f3dc;border-color:#52b788;color:#1a4731}
+    .answer-btn.sel-sometimes{background:#fff4e0;border-color:#f4a261;color:#b36200}
+    .answer-btn.sel-no{background:#ffe8e8;border-color:#d62828;color:#d62828}
+    .btn-submit{width:100%;margin-top:20px;padding:18px;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-submit:active{opacity:.9}
+    .btn-submit:disabled{opacity:.5;cursor:not-allowed}
+    .success-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px}
+    .success-icon{width:84px;height:84px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:24px;box-shadow:0 0 0 14px rgba(82,183,136,.12)}
+    .success-wrap h2{font-size:20px;font-weight:700;color:var(--green-dark);margin-bottom:12px}
+    .success-wrap p{font-size:14px;color:var(--gray-500);line-height:1.8;max-width:280px}
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+    .spinner.visible{display:block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="header-icon">🛡️</div>
+  <h1>Food Safety Culture Survey<br><span style="font-size:13px;opacity:.85">استبيان ثقافة سلامة الغذاء</span></h1>
+  <p>Quality &amp; Food Safety Team</p>
+</div>
+
+<!-- ① LOGIN -->
+<div class="screen active" id="screen-login">
+  <div class="login-card">
+    <h2>تسجيل الدخول / Sign In</h2>
+    <p class="subtitle">أدخل رقمك الوظيفي للمتابعة<br>Enter your Employee ID to continue</p>
+    <label class="field-label" for="emp-id">الرقم الوظيفي / Employee ID</label>
+    <input class="field-input" type="text" id="emp-id" placeholder="مثال: EMP001" autocomplete="off" />
+    <button class="btn-primary" id="btn-login" onclick="doLogin()">
+      <span id="login-label">دخول / Login</span>
+      <div class="spinner" id="login-spinner"></div>
+    </button>
+    <div class="msg-box msg-error"   id="msg-error"></div>
+    <div class="msg-box msg-loading" id="msg-loading">⏳ جارٍ التحقق… Verifying…</div>
+    <div class="msg-box msg-done"    id="msg-done">✅ أكملت هذا الاستبيان مسبقاً.<br>You have already completed this survey.</div>
+  </div>
+</div>
+
+<!-- ② SURVEY -->
+<div class="screen" id="screen-survey">
+  <div class="user-badge">
+    <div class="user-avatar">👤</div>
+    <div>
+      <div class="user-name" id="disp-name">—</div>
+      <div class="user-dept" id="disp-dept">—</div>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-row">
+      <span class="progress-label">التقدم / Progress</span>
+      <span class="progress-count" id="prog-count">0 / 25</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar"></div></div>
+  </div>
+  <div id="q-container"></div>
+  <button class="btn-submit" id="btn-submit" onclick="doSubmit()" disabled>
+    <span id="submit-label">إرسال الاستبيان / Submit Survey</span>
+    <div class="spinner" id="submit-spinner"></div>
+  </button>
+</div>
+
+<!-- ③ SUCCESS -->
+<div class="screen" id="screen-success">
+  <div class="success-wrap">
+    <div class="success-icon">✅</div>
+    <h2>شكراً لمشاركتك!<br>Thank you!</h2>
+    <p>تم إرسال إجاباتك بنجاح وستُستخدم لتحسين ثقافة سلامة الغذاء.<br><br>Your responses were submitted successfully.</p>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   ضع هنا رابط Apps Script Web App
+   ══════════════════════════════════════════════ */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4NjfbCJZRnQd1XMRS1UN5Tish1DSHSff6MwdWbyJJJNBfYx4o6tnpP276b3QcB1iuPg/exec";
+/* ══════════════════════════════════════════════ */
+
+const SECTIONS = [
+  { ar:"القيادة والالتزام", en:"Leadership & Commitment", qs:[
+    {ar:"تُظهر الإدارة التزامًا واضحًا وملموسًا بالجودة وسلامة الغذاء.",en:"Management demonstrates a visible commitment to quality and food safety."},
+    {ar:"أفهم رؤية الشركة وأهدافها فيما يتعلق بالجودة وسلامة الغذاء.",en:"I understand the company's quality and food safety vision and objectives."},
+    {ar:"يحرص القادة على التأكيد على أهمية إنتاج منتجات آمنة وعالية الجودة.",en:"Leaders communicate the importance of producing safe, high-quality products."},
+    {ar:"تستجيب الإدارة بسرعة عند طرح أي مخاوف تتعلق بالجودة أو سلامة الغذاء.",en:"Management responds promptly when quality or food safety concerns are raised."},
+    {ar:"يتم توصيل المعلومات المتعلقة بالجودة وسلامة الغذاء بوضوح وفي الوقت المناسب.",en:"Information related to quality and food safety is communicated clearly and on time."},
+  ]},
+  { ar:"التواصل والإبلاغ", en:"Communication & Reporting", qs:[
+    {ar:"أشعر بالراحة عند الإبلاغ عن مشكلات سلامة الغذاء دون الخوف من أي عواقب سلبية.",en:"I feel comfortable reporting food safety issues without fear of negative consequences."},
+    {ar:"يتم توضيح التوقعات المتعلقة بالجودة وسلامة الغذاء في عملي بشكل واضح.",en:"Expectations for quality and food safety in my job are clearly communicated."},
+  ]},
+  { ar:"التدريب والكفاءة", en:"Training & Competency", qs:[
+    {ar:"تلقيت تدريبًا كافيًا لأداء عملي بأمان وصحة.",en:"I received sufficient training to perform my job safely and correctly."},
+    {ar:"المواد التدريبية واضحة ومرتبطة بالعمل وعملية في تطبيقها.",en:"Training materials are clear, relevant, and practical."},
+    {ar:"أعرف كيفية التعرف على مخاطر الجودة أو سلامة الغذاء والإبلاغ عنها.",en:"I know how to identify and report a quality or food safety hazard."},
+    {ar:"أتلقى تدريبًا تنشيطيًا عند حدوث تغييرات أو عند الحاجة.",en:"I receive refresher training when changes occur or when needed."},
+  ]},
+  { ar:"السلوك الشخصي والمسؤولية", en:"Personal Behaviour & Accountability", qs:[
+    {ar:"أشعر بمسؤولية شخصية تجاه الجودة وسلامة الغذاء.",en:"I feel personally responsible for quality and food safety."},
+    {ar:"ألتزم دائمًا باتباع قواعد النظافة وممارسات التصنيع الجيدة وقواعد سلامة الغذاء أثناء العمل.",en:"I always follow hygiene, GMP, and food safety rules while working."},
+    {ar:"أتخذ إجراءً فوريًا عند ملاحظة أي خطر محتمل.",en:"I take immediate action if I notice a potential hazard."},
+    {ar:"أشعر بالتشجيع على طرح أفكار لتحسين الجودة وسلامة الغذاء.",en:"I feel encouraged to share improvement ideas related to quality and food safety."},
+  ]},
+  { ar:"الإجراءات وبيئة العمل", en:"Procedures & Work Environment", qs:[
+    {ar:"إجراءات التشغيل القياسية والإجراءات في منطقتي واضحة وسهلة التطبيق.",en:"The SOPs and procedures in my area are clear and easy to follow."},
+    {ar:"ألتزم بإجراءات التشغيل القياسية حتى عند العمل تحت الضغط.",en:"I follow SOPs even when working under pressure."},
+    {ar:"يتم التعامل مع حالات عدم الالتزام بقواعد سلامة الغذاء بشكل عادل ومتسق.",en:"Non-compliance with food safety rules is handled fairly and consistently."},
+  ]},
+  { ar:"الموارد والبنية التحتية", en:"Resources & Infrastructure", qs:[
+    {ar:"الأدوات والمعدات اللازمة للعمل بأمان متوفرة وفي حالة جيدة.",en:"The tools and equipment I need to work safely are available and in good condition."},
+    {ar:"بيئة عملي نظيفة ومنظمة وتدعم ممارسات النظافة الجيدة.",en:"My workplace is clean, organized, and supports good hygiene practices."},
+    {ar:"تتوفر لدي الموارد اللازمة (معدات الوقاية الشخصية، الأدوات، مواد التنظيف) للحفاظ على الجودة وسلامة الغذاء.",en:"I have the necessary resources (PPE, tools, cleaning materials) to maintain quality and food safety."},
+    {ar:"يتم التعامل بسرعة مع مشكلات الصيانة التي قد تؤثر على الجودة أو السلامة.",en:"Maintenance issues that may impact quality or safety are resolved promptly."},
+  ]},
+  { ar:"التحسين المستمر", en:"Continuous Improvement", qs:[
+    {ar:"يتم مشاركة الدروس المستفادة من الحوادث أو الحوادث الوشيكة مع الموظفين.",en:"Lessons learned from incidents or near-misses are communicated to employees."},
+    {ar:"ألاحظ وجود مبادرات للتحسين المستمر في مجال الجودة وسلامة الغذاء.",en:"I observe continuous improvement initiatives related to quality and food safety."},
+    {ar:"أعتقد أن الشركة ملتزمة بالتحسين المستمر على المدى الطويل في الجودة وسلامة الغذاء.",en:"I believe the company is committed to long-term improvement in quality and food safety."},
+  ]},
+];
+
+const ALL_Q = [];
+SECTIONS.forEach(s => s.qs.forEach(q => ALL_Q.push(q)));
+const TOTAL = ALL_Q.length;
+
+let answers = {};
+let currentUser = {};
+
+/* ── BUILD ── */
+function buildSurvey() {
+  const c = document.getElementById('q-container');
+  c.innerHTML = '';
+  let idx = 0;
+  SECTIONS.forEach(sec => {
+    const h = document.createElement('div');
+    h.className = 'section-header';
+    h.textContent = `${sec.ar}  —  ${sec.en}`;
+    c.appendChild(h);
+    sec.qs.forEach(q => {
+      const i = idx++;
+      const d = document.createElement('div');
+      d.className = 'question-card';
+      d.id = `qc${i}`;
+      d.innerHTML = `
+        <span class="q-number">Q${i+1}</span>
+        <p class="q-text-ar">${q.ar}</p>
+        <p class="q-text-en">${q.en}</p>
+        <div class="answer-row">
+          <button class="answer-btn" onclick="pick(${i},'yes')">✅ نعم<br><small>Yes</small></button>
+          <button class="answer-btn" onclick="pick(${i},'sometimes')">🔶 أحياناً<br><small>Sometimes</small></button>
+          <button class="answer-btn" onclick="pick(${i},'no')">❌ لا<br><small>No</small></button>
+        </div>`;
+      c.appendChild(d);
+    });
+  });
+  updateProg();
+}
+
+function pick(i, val) {
+  answers[i] = val;
+  const card = document.getElementById(`qc${i}`);
+  card.classList.add('answered');
+  const btns = card.querySelectorAll('.answer-btn');
+  btns.forEach(b => { b.className = 'answer-btn'; });
+  if (val==='yes')       btns[0].classList.add('sel-yes');
+  if (val==='sometimes') btns[1].classList.add('sel-sometimes');
+  if (val==='no')        btns[2].classList.add('sel-no');
+  updateProg();
+}
+
+function updateProg() {
+  const done = Object.keys(answers).length;
+  document.getElementById('prog-count').textContent = `${done} / ${TOTAL}`;
+  document.getElementById('prog-bar').style.width = `${(done/TOTAL)*100}%`;
+  document.getElementById('btn-submit').disabled = done < TOTAL;
+}
+
+/* ── LOGIN ──
+   Apps Script redirects على نفس URL بعد doGet
+   لازم نستخدم no-cors مع GET وnjsonp أو نعمل iframe trick
+   الحل الأبسط: نحط البيانات في URL params ونقرأ الـ response كـ text
+*/
+async function doLogin() {
+  const id = document.getElementById('emp-id').value.trim();
+  if (!id) { showErr('الرجاء إدخال الرقم الوظيفي.\nPlease enter your Employee ID.'); return; }
+  clearMsgs();
+  setLoginBusy(true);
+
+  try {
+    // نبعت GET request — Apps Script بيرد بـ JSON
+    const url = `${APPS_SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',   // ← مهم جداً يتبع الـ redirect
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const text = await res.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error('الاستجابة غير صحيحة من الخادم:\n' + text.substring(0,200));
+    }
+
+    if (data.status === 'not_found') {
+      showErr('الرقم الوظيفي غير موجود. تحقق وأعد المحاولة.\nEmployee ID not found.');
+    } else if (data.status === 'already_done') {
+      document.getElementById('msg-done').classList.add('visible');
+    } else if (data.status === 'ok') {
+      currentUser = { id: data.id, name: data.name, dept: data.dept };
+      document.getElementById('disp-name').textContent = data.name;
+      document.getElementById('disp-dept').textContent = data.dept;
+      answers = {};
+      buildSurvey();
+      showScreen('screen-survey');
+    } else {
+      showErr('خطأ: ' + (data.message || JSON.stringify(data)));
+    }
+  } catch (e) {
+    showErr(`فشل الاتصال:\n${e.message}`);
+  }
+
+  setLoginBusy(false);
+}
+
+/* ── SUBMIT ── */
+async function doSubmit() {
+  if (Object.keys(answers).length < TOTAL) return;
+  setSubmitBusy(true);
+
+  const payload = {
+    action:    'submit',
+    id:        currentUser.id,
+    name:      currentUser.name,
+    dept:      currentUser.dept,
+    timestamp: new Date().toISOString(),
+    answers:   ALL_Q.map((_, i) => answers[i] || ''),
+  };
+
+  try {
+    // Apps Script لا يقبل POST مع JSON body مباشرة بسبب CORS
+    // الحل: نبعت كـ form-encoded أو كـ GET مع params
+    // الأضمن: نستخدم no-cors POST + نتأكد من الكود إن البيانات وصلت
+    const formData = new URLSearchParams();
+    formData.append('payload', JSON.stringify(payload));
+
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: formData,
+      redirect: 'follow',
+    });
+
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { status: text.includes('ok') ? 'ok' : 'error' }; }
+
+    if (data.status === 'ok') {
+      showScreen('screen-success');
+    } else {
+      alert('فشل الإرسال: ' + (data.message || text.substring(0,100)));
+    }
+  } catch (e) {
+    alert(`خطأ في الإرسال:\n${e.message}`);
+  }
+
+  setSubmitBusy(false);
+}
+
+/* ── HELPERS ── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showErr(msg) {
+  const el = document.getElementById('msg-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearMsgs() {
+  ['msg-error','msg-loading','msg-done'].forEach(id =>
+    document.getElementById(id).classList.remove('visible'));
+}
+function setLoginBusy(on) {
+  document.getElementById('btn-login').disabled = on;
+  document.getElementById('login-spinner').classList.toggle('visible', on);
+  document.getElementById('login-label').style.display = on ? 'none' : '';
+  document.getElementById('msg-loading').classList.toggle('visible', on);
+}
+function setSubmitBusy(on) {
+  document.getElementById('btn-submit').disabled = on;
+  document.getElementById('submit-spinner').classList.toggle('visible', on);
+  document.getElementById('submit-label').style.display = on ? 'none' : '';
+}
+
+document.getElementById('emp-id').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>
