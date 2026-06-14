@@ -276,7 +276,15 @@ async function doLogin() {
     if (data.status === 'not_found') {
       showErr('الرقم الوظيفي غير موجود. تحقق وأعد المحاولة.\nEmployee ID not found.');
     } else if (data.status === 'already_done') {
-      document.getElementById('msg-done').classList.add('visible');
+      const lastDate = new Date(data.last_date);
+      const nextDate = new Date(lastDate);
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      const opts = { year:'numeric', month:'long', day:'numeric' };
+      const nextAr = nextDate.toLocaleDateString('ar-EG', opts);
+      const nextEn = nextDate.toLocaleDateString('en-GB', opts);
+      const el = document.getElementById('msg-done');
+      el.innerHTML = `⏳ لقد أكملت هذا الاستبيان بالفعل.<br>يمكنك تقديم استبيان جديد بدءاً من:<br><strong>${nextAr} — ${nextEn}</strong>`;
+      el.classList.add('visible');
     } else if (data.status === 'ok') {
       currentUser = { id: data.id, name: data.name, dept: data.dept };
       document.getElementById('disp-name').textContent = data.name;
