@@ -179,7 +179,10 @@ function buildSurvey() {
 function pick(i, val) {
   answers[i] = val;
   const card = document.getElementById(`qc${i}`);
-  card.classList.add('answered');
+  card.classList.remove('answered-yes','answered-sometimes','answered-no');
+  if (val==='yes')       card.classList.add('answered-yes');
+  if (val==='sometimes') card.classList.add('answered-sometimes');
+  if (val==='no')        card.classList.add('answered-no');
   const btns = card.querySelectorAll('.answer-btn');
   btns.forEach(b => { b.className = 'answer-btn'; });
   if (val==='yes')       btns[0].classList.add('sel-yes');
