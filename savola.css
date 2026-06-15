@@ -72,20 +72,23 @@ body {
 .header-topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
+  justify-content: center;
+  gap: 20px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--grey-border);
   background: var(--white);
   direction: ltr;
+  flex-wrap: wrap;
 }
 .header-logo {
-  height: 52px;
-  max-width: 55%;
+  height: 56px;
+  max-width: 180px;
   object-fit: contain;
-  object-position: left center;
+  object-position: center;
+  flex-shrink: 0;
 }
 .header-titles {
-  text-align: right;
+  text-align: center;
   direction: ltr;
   flex-shrink: 0;
 }
@@ -108,6 +111,22 @@ body {
   color: var(--lime-dark);
   letter-spacing: 0.3px;
   margin-top: 2px;
+}
+
+/* ── HEADER RESPONSIVE ── */
+@media (max-width: 600px) {
+  .header-topbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 12px;
+  }
+  .header-logo {
+    height: 52px;
+    max-width: 160px;
+  }
+  .header-titles {
+    text-align: center;
+  }
 }
 
 /* ── INTRO BANNER ── */
