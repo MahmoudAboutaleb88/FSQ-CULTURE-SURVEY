@@ -253,11 +253,45 @@ body {
 
 /* ── PROGRESS ── */
 .progress-wrap {
+  display: none; /* hidden in normal flow — replaced by floating pill */
+}
+
+/* ── FLOATING PROGRESS PILL ── */
+.progress-pill {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--white);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px; margin-bottom: 14px;
-  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--grey-border);
+  border-radius: 99px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 999;
+  min-width: 220px;
+  max-width: 320px;
+  transition: box-shadow .2s;
+}
+.progress-pill:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.16); }
+.pill-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; font-family: var(--font-main); }
+.pill-count { font-size: 12px; font-weight: 800; color: var(--lime-dark); white-space: nowrap; font-family: var(--font-main); }
+.pill-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--grey-pale);
+  border-radius: 99px;
+  overflow: hidden;
   border: 1px solid var(--grey-border);
+}
+.pill-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--lime), var(--lime-dark));
+  border-radius: 99px;
+  transition: width .4s ease;
+  width: 0%;
 }
 .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .progress-label { font-size: 12px; color: var(--text-muted); }
@@ -290,9 +324,7 @@ body {
   border-right: 4px solid var(--grey-pale);
   transition: border-right-color .2s;
 }
-.question-card.answered-yes       { border-right-color: var(--lime); }
-.question-card.answered-sometimes { border-right-color: var(--orange); }
-.question-card.answered-no        { border-right-color: var(--danger); }
+.question-card.answered { border-right-color: var(--lime); }
 .q-number {
   font-size: 10px; font-weight: 700; color: var(--lime-dark);
   background: var(--lime-pale);
