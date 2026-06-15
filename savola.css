@@ -324,7 +324,9 @@ body {
   border-right: 4px solid var(--grey-pale);
   transition: border-right-color .2s;
 }
-.question-card.answered { border-right-color: var(--lime); }
+.question-card.answered-yes       { border-right-color: var(--lime); }
+.question-card.answered-sometimes { border-right-color: var(--orange); }
+.question-card.answered-no        { border-right-color: var(--danger); }
 .q-number {
   font-size: 10px; font-weight: 700; color: var(--lime-dark);
   background: var(--lime-pale);
