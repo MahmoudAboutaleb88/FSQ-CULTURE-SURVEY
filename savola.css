@@ -59,52 +59,76 @@ body {
 
 /* ── APP HEADER ── */
 .app-header {
-  background: linear-gradient(135deg, #1e2820 0%, var(--grey) 100%);
-  color: var(--white);
-  padding: 20px 20px 34px;
-  text-align: center;
+  background: var(--white);
+  color: var(--grey);
+  padding: 0 0 0 0;
   position: relative;
   border-bottom: 4px solid var(--lime);
+  border-top: 3px solid var(--grey);
 }
-.app-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 20px;
-  background: var(--off-white);
-  border-radius: 20px 20px 0 0;
+.app-header::after { display: none; }
+
+/* Top bar: logo | divider | text */
+.header-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--grey-border);
+  background: var(--white);
+  direction: ltr;
 }
-.header-icon {
-  width: 52px; height: 52px;
-  background: rgba(167,206,57,.2);
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 12px;
-  font-size: 26px;
-  border: 2px solid rgba(167,206,57,.4);
+.header-logo {
+  height: 52px;
+  max-width: 55%;
+  object-fit: contain;
+  object-position: left center;
 }
-.app-header h1 { font-size: 17px; font-weight: 700; line-height: 1.4; }
-.app-header p  { font-size: 11px; opacity: .7; margin-top: 4px; }
+.header-titles {
+  text-align: right;
+  direction: ltr;
+  flex-shrink: 0;
+}
+.header-company {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--grey);
+  letter-spacing: 0.3px;
+  line-height: 1.5;
+}
+.header-dept {
+  font-size: 10px;
+  color: var(--grey-light);
+  letter-spacing: 0.2px;
+  line-height: 1.5;
+}
+.header-survey {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--lime-dark);
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
 
 /* ── INTRO BANNER ── */
 .header-intro {
-  margin: 16px 4px 0;
-  background: rgba(167,206,57,.12);
-  border-radius: 10px;
+  margin: 0;
+  background: var(--grey-pale);
+  border-radius: 0;
   padding: 14px 16px;
   text-align: right;
-  border: 1px solid rgba(167,206,57,.3);
+  border-top: 1px solid var(--grey-border);
 }
-.header-intro p { font-size: 12px; line-height: 2; color: #fff; opacity: .95; }
+.header-intro p { font-size: 12px; line-height: 2; color: var(--grey); }
 .header-intro .intro-note {
   margin-top: 10px;
   padding: 10px 12px;
-  background: rgba(239,150,0,.2);
+  background: var(--orange-pale);
   border-radius: 8px;
   font-size: 11.5px;
   font-weight: 600;
   line-height: 1.9;
-  color: #fff;
+  color: #7a4f00;
   border-right: 3px solid var(--orange);
 }
 
