@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard – Food Safety Culture Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --green-dark:#1a4731;--green-mid:#2d6a4f;--green-light:#52b788;--green-pale:#d8f3dc;
+  --amber:#f4a261;--amber-pale:#fff4e0;--red:#d62828;--red-pale:#ffe8e8;
+  --white:#fff;--gray-50:#f6f8f6;--gray-100:#eef2ee;--gray-200:#dde5dd;
+  --gray-400:#9aad9a;--gray-600:#4a5e4a;--gray-800:#1e2b1e;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.07);--shadow-md:0 4px 16px rgba(0,0,0,.10);
+  --radius:14px;--radius-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh}
+
+/* HEADER */
+.dash-header{background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:#fff;padding:18px 20px 32px;position:relative;text-align:center}
+.dash-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:var(--gray-50);border-radius:20px 20px 0 0}
+.dash-header h1{font-size:16px;font-weight:800;line-height:1.4}
+.dash-header p{font-size:11px;opacity:.7;margin-top:3px}
+.header-icon{width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px}
+
+/* LOADING */
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px}
+.spinner-big{width:44px;height:44px;border:4px solid var(--green-pale);border-top-color:var(--green-mid);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-screen p{font-size:13px;color:var(--gray-600)}
+
+/* ERROR */
+.error-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:24px}
+.error-screen .icon{font-size:48px;margin-bottom:12px}
+.error-screen p{font-size:13px;color:var(--gray-600);line-height:1.8}
+
+/* MAIN */
+.main{display:none;padding:16px 14px 48px}
+
+/* FILTER BAR */
+.filter-bar{background:#fff;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:10px}
+.filter-bar label{font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px;display:block}
+.filter-select{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:13px;color:var(--gray-800);background:#fff;outline:none}
+.filter-select:focus{border-color:var(--green-light)}
+.btn-refresh{width:100%;padding:11px;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-refresh:active{opacity:.9}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi-card{background:#fff;border-radius:var(--radius);padding:14px 12px;box-shadow:var(--shadow-sm);text-align:center;border-top:3px solid var(--green-light)}
+.kpi-card.amber{border-top-color:var(--amber)}
+.kpi-card.red{border-top-color:var(--red)}
+.kpi-card.blue{border-top-color:#4895ef}
+.kpi-val{font-size:26px;font-weight:800;color:var(--green-dark);line-height:1}
+.kpi-card.amber .kpi-val{color:#b36200}
+.kpi-card.red .kpi-val{color:var(--red)}
+.kpi-card.blue .kpi-val{color:#1d6fa4}
+.kpi-label{font-size:11px;color:var(--gray-600);margin-top:5px;line-height:1.4}
+
+/* SECTION CARD */
+.card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;color:var(--green-dark);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title .dot{width:8px;height:8px;background:var(--green-light);border-radius:50%;flex-shrink:0}
+
+/* OVERALL SCORE RING */
+.score-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.score-ring-wrap{position:relative;width:140px;height:140px}
+.score-ring-wrap canvas{position:absolute;top:0;left:0}
+.score-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.score-pct{font-size:28px;font-weight:800;color:var(--green-dark)}
+.score-lbl{font-size:10px;color:var(--gray-600);margin-top:2px}
+.score-badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px}
+.badge-yes{background:var(--green-pale);color:var(--green-dark)}
+.badge-sometimes{background:var(--amber-pale);color:#b36200}
+.badge-no{background:var(--red-pale);color:var(--red)}
+
+/* SECTION BARS */
+.sec-bar-row{margin-bottom:12px}
+.sec-bar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.sec-bar-name{font-size:11.5px;font-weight:600;color:var(--gray-800)}
+.sec-bar-pct{font-size:11px;font-weight:700;color:var(--green-dark)}
+.sec-bar-bg{height:8px;background:var(--gray-100);border-radius:99px;overflow:hidden;position:relative}
+.sec-bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+
+/* QUESTION TABLE */
+.q-row{padding:10px 0;border-bottom:1px solid var(--gray-100)}
+.q-row:last-child{border-bottom:none}
+.q-text{font-size:12px;color:var(--gray-800);line-height:1.6;margin-bottom:6px}
+.q-bars{display:flex;gap:4px;height:6px;border-radius:99px;overflow:hidden}
+.q-bar-yes{background:var(--green-light)}
+.q-bar-sometimes{background:var(--amber)}
+.q-bar-no{background:var(--red)}
+.q-legend{display:flex;gap:10px;margin-top:5px}
+.q-leg-item{font-size:10px;color:var(--gray-600);display:flex;align-items:center;gap:3px}
+.q-leg-dot{width:7px;height:7px;border-radius:50%}
+
+/* DEPT CHART */
+.chart-wrap{position:relative;height:220px}
+
+/* TREND */
+.trend-empty{text-align:center;padding:24px;font-size:12px;color:var(--gray-400)}
+
+/* RESPONSE LIST */
+.resp-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--gray-100);font-size:12px}
+.resp-item:last-child{border-bottom:none}
+.resp-dept{color:var(--gray-600)}
+.resp-date{color:var(--gray-400);font-size:10px;font-family:'Inter',sans-serif}
+.resp-score{font-weight:700;padding:3px 8px;border-radius:99px;font-size:11px}
+.score-high{background:var(--green-pale);color:var(--green-dark)}
+.score-mid{background:var(--amber-pale);color:#b36200}
+.score-low{background:var(--red-pale);color:var(--red)}
+
+/* TAGS */
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;margin:2px}
+.tag-yes{background:var(--green-pale);color:var(--green-dark)}
+.tag-no{background:var(--red-pale);color:var(--red)}
+.tag-sometimes{background:var(--amber-pale);color:#b36200}
+</style>
+</head>
+<body>
+
+<div class="dash-header">
+  <div class="header-icon">📊</div>
+  <h1>Food Safety Culture Dashboard<br><span style="font-size:12px;opacity:.8">لوحة تحكم استبيان ثقافة سلامة الغذاء</span></h1>
+  <p>Quality &amp; Food Safety Team</p>
+</div>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading">
+  <div class="spinner-big"></div>
+  <p>جارٍ تحميل البيانات… Loading data…</p>
+</div>
+
+<!-- ERROR -->
+<div class="error-screen" id="error-screen">
+  <div class="icon">⚠️</div>
+  <p id="error-msg">فشل تحميل البيانات.<br>Load failed.</p>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div class="main" id="main">
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div>
+      <label>القسم / Department</label>
+      <select class="filter-select" id="filter-dept" onchange="applyFilter()">
+        <option value="">الكل / All</option>
+      </select>
+    </div>
+    <div>
+      <label>الفترة / Period</label>
+      <select class="filter-select" id="filter-period" onchange="applyFilter()">
+        <option value="0">كل الوقت / All time</option>
+        <option value="7">آخر 7 أيام</option>
+        <option value="30">آخر 30 يوم</option>
+        <option value="90">آخر 3 أشهر</option>
+      </select>
+    </div>
+    <button class="btn-refresh" onclick="loadData()">🔄 تحديث / Refresh</button>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-val" id="kpi-total">—</div><div class="kpi-label">إجمالي الاستجابات<br>Total Responses</div></div>
+    <div class="kpi-card blue"><div class="kpi-val" id="kpi-depts">—</div><div class="kpi-label">الأقسام المشاركة<br>Departments</div></div>
+    <div class="kpi-card"><div class="kpi-val" id="kpi-score">—</div><div class="kpi-label">متوسط الالتزام<br>Avg Compliance</div></div>
+    <div class="kpi-card red"><div class="kpi-val" id="kpi-low">—</div><div class="kpi-label">نقاط ضعف<br>Weak Points</div></div>
+  </div>
+
+  <!-- OVERALL SCORE -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>النتيجة الإجمالية / Overall Score</div>
+    <div class="score-wrap">
+      <div class="score-ring-wrap">
+        <canvas id="ring-chart" width="140" height="140"></canvas>
+        <div class="score-center">
+          <div class="score-pct" id="ring-pct">—</div>
+          <div class="score-lbl">نعم / Yes</div>
+        </div>
+      </div>
+      <div class="score-badges">
+        <span class="badge badge-yes">✅ نعم: <span id="pct-yes">—</span></span>
+        <span class="badge badge-sometimes">🔶 أحياناً: <span id="pct-sometimes">—</span></span>
+        <span class="badge badge-no">❌ لا: <span id="pct-no">—</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION SCORES -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>النتائج حسب المحور / Score by Section</div>
+    <div id="section-bars"></div>
+  </div>
+
+  <!-- DEPT CHART -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>الالتزام حسب القسم / Compliance by Department</div>
+    <div class="chart-wrap"><canvas id="dept-chart"></canvas></div>
+  </div>
+
+  <!-- QUESTION BREAKDOWN -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>تفاصيل الأسئلة / Question Breakdown</div>
+    <div id="q-breakdown"></div>
+  </div>
+
+  <!-- TREND OVER TIME -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>الاتجاه الزمني / Trend Over Time</div>
+    <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
+  </div>
+
+  <!-- RECENT RESPONSES -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>آخر الاستجابات / Recent Responses</div>
+    <div id="recent-list"></div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEYxjPadrqhUNUILAyj6lrogbTWDNnZxmnFcpQY4d3gWbdTG4-iamJUkt9GOKA_EEsVA/exec";
+
+const SECTIONS = [
+  { ar:"القيادة والالتزام",          en:"Leadership & Commitment",        count:5 },
+  { ar:"التواصل والإبلاغ",           en:"Communication & Reporting",      count:2 },
+  { ar:"التدريب والكفاءة",           en:"Training & Competency",          count:4 },
+  { ar:"السلوك الشخصي والمسؤولية",  en:"Personal Behaviour",             count:4 },
+  { ar:"الإجراءات وبيئة العمل",      en:"Procedures & Environment",       count:3 },
+  { ar:"الموارد والبنية التحتية",    en:"Resources & Infrastructure",     count:4 },
+  { ar:"التحسين المستمر",            en:"Continuous Improvement",         count:3 },
+];
+const TOTAL_Q = 25;
+
+let allData = [];
+let ringChart, deptChart, trendChart;
+
+/* ── LOAD ── */
+async function loadData() {
+  show('loading'); hide('main'); hide('error-screen');
+  try {
+    const res  = await fetch(`${APPS_SCRIPT_URL}?action=dashboard`, { redirect:'follow' });
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (data.status !== 'ok') throw new Error(data.message || 'Load error');
+    allData = data.rows;
+    populateDeptFilter();
+    applyFilter();
+    show('main'); hide('loading');
+  } catch(e) {
+    document.getElementById('error-msg').textContent = 'فشل التحميل:\n' + e.message;
+    show('error-screen'); hide('loading');
+  }
+}
+
+function populateDeptFilter() {
+  const depts = [...new Set(allData.map(r => r.dept).filter(Boolean))].sort();
+  const sel = document.getElementById('filter-dept');
+  sel.innerHTML = '<option value="">الكل / All</option>';
+  depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
+}
+
+/* ── FILTER & RENDER ── */
+function applyFilter() {
+  const dept   = document.getElementById('filter-dept').value;
+  const days   = parseInt(document.getElementById('filter-period').value);
+  const cutoff = days > 0 ? Date.now() - days * 86400000 : 0;
+
+  const filtered = allData.filter(r => {
+    if (dept && r.dept !== dept) return false;
+    if (cutoff && new Date(r.timestamp) < cutoff) return false;
+    return true;
+  });
+
+  renderKPI(filtered);
+  renderOverall(filtered);
+  renderSectionBars(filtered);
+  renderDeptChart(filtered);
+  renderQuestions(filtered);
+  renderTrend(filtered);
+  renderRecent(filtered);
+}
+
+/* ── KPI ── */
+function renderKPI(rows) {
+  const depts = new Set(rows.map(r => r.dept));
+  const allAns = rows.flatMap(r => r.answers);
+  const yes = allAns.filter(a => a==='yes').length;
+  const total = allAns.length;
+  const pct = total ? Math.round(yes/total*100) : 0;
+
+  // weak: questions where yes < 60%
+  let weak = 0;
+  for (let q = 0; q < TOTAL_Q; q++) {
+    const qAns = rows.map(r => r.answers[q]).filter(Boolean);
+    const qYes = qAns.filter(a => a==='yes').length;
+    if (qAns.length && qYes/qAns.length < 0.6) weak++;
+  }
+
+  document.getElementById('kpi-total').textContent  = rows.length;
+  document.getElementById('kpi-depts').textContent  = depts.size;
+  document.getElementById('kpi-score').textContent  = pct + '%';
+  document.getElementById('kpi-low').textContent    = weak;
+}
+
+/* ── OVERALL RING ── */
+function renderOverall(rows) {
+  const allAns = rows.flatMap(r => r.answers);
+  const total = allAns.length || 1;
+  const yes  = allAns.filter(a=>a==='yes').length;
+  const som  = allAns.filter(a=>a==='sometimes').length;
+  const no   = allAns.filter(a=>a==='no').length;
+  const pctY = Math.round(yes/total*100);
+  const pctS = Math.round(som/total*100);
+  const pctN = Math.round(no/total*100);
+
+  document.getElementById('ring-pct').textContent      = pctY + '%';
+  document.getElementById('pct-yes').textContent       = pctY + '%';
+  document.getElementById('pct-sometimes').textContent = pctS + '%';
+  document.getElementById('pct-no').textContent        = pctN + '%';
+
+  if (ringChart) ringChart.destroy();
+  ringChart = new Chart(document.getElementById('ring-chart'), {
+    type: 'doughnut',
+    data: {
+      datasets:[{ data:[pctY, pctS, pctN], backgroundColor:['#52b788','#f4a261','#d62828'], borderWidth:0, cutout:'72%' }]
+    },
+    options:{ plugins:{legend:{display:false},tooltip:{enabled:false}}, animation:{duration:800} }
+  });
+}
+
+/* ── SECTION BARS ── */
+function renderSectionBars(rows) {
+  const wrap = document.getElementById('section-bars');
+  wrap.innerHTML = '';
+  let qStart = 0;
+  SECTIONS.forEach(sec => {
+    const secAns = rows.flatMap(r => r.answers.slice(qStart, qStart + sec.count));
+    const total  = secAns.length || 1;
+    const yes    = secAns.filter(a=>a==='yes').length;
+    const pct    = Math.round(yes/total*100);
+    const color  = pct>=75 ? '#52b788' : pct>=50 ? '#f4a261' : '#d62828';
+    wrap.innerHTML += `
+      <div class="sec-bar-row">
+        <div class="sec-bar-header">
+          <span class="sec-bar-name">${sec.ar}</span>
+          <span class="sec-bar-pct" style="color:${color}">${pct}%</span>
+        </div>
+        <div class="sec-bar-bg">
+          <div class="sec-bar-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+      </div>`;
+    qStart += sec.count;
+  });
+}
+
+/* ── DEPT CHART ── */
+function renderDeptChart(rows) {
+  const deptMap = {};
+  rows.forEach(r => {
+    if (!deptMap[r.dept]) deptMap[r.dept] = { yes:0, total:0 };
+    r.answers.forEach(a => { deptMap[r.dept].total++; if(a==='yes') deptMap[r.dept].yes++; });
+  });
+  const labels = Object.keys(deptMap);
+  const values = labels.map(d => Math.round(deptMap[d].yes / (deptMap[d].total||1) * 100));
+  const colors = values.map(v => v>=75?'#52b788':v>=50?'#f4a261':'#d62828');
+
+  if (deptChart) deptChart.destroy();
+  deptChart = new Chart(document.getElementById('dept-chart'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data:values, backgroundColor:colors, borderRadius:6, borderSkipped:false }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ctx.parsed.y + '%' } } },
+      scales:{
+        y:{ min:0, max:100, ticks:{ callback: v=>v+'%', font:{size:10} }, grid:{color:'#eef2ee'} },
+        x:{ ticks:{ font:{size:9}, maxRotation:30 } }
+      }
+    }
+  });
+}
+
+/* ── QUESTION BREAKDOWN ── */
+function renderQuestions(rows) {
+  const wrap = document.getElementById('q-breakdown');
+  wrap.innerHTML = '';
+
+  const QLABELS = [
+    "تُظهر الإدارة التزامًا واضحًا بالجودة وسلامة الغذاء",
+    "أفهم رؤية الشركة وأهدافها فيما يتعلق بالجودة وسلامة الغذاء",
+    "يحرص القادة على أهمية إنتاج منتجات آمنة وعالية الجودة",
+    "تستجيب الإدارة بسرعة عند طرح مخاوف الجودة أو سلامة الغذاء",
+    "يتم توصيل معلومات الجودة وسلامة الغذاء بوضوح وفي الوقت المناسب",
+    "أشعر بالراحة عند الإبلاغ عن مشكلات سلامة الغذاء",
+    "يتم توضيح توقعات الجودة وسلامة الغذاء في عملي بوضوح",
+    "تلقيت تدريبًا كافيًا لأداء عملي بأمان",
+    "المواد التدريبية واضحة ومرتبطة بالعمل وعملية",
+    "أعرف كيفية التعرف على مخاطر الجودة أو سلامة الغذاء والإبلاغ عنها",
+    "أتلقى تدريبًا تنشيطيًا عند حدوث تغييرات",
+    "أشعر بمسؤولية شخصية تجاه الجودة وسلامة الغذاء",
+    "ألتزم دائمًا بقواعد النظافة وممارسات التصنيع الجيدة",
+    "أتخذ إجراءً فوريًا عند ملاحظة أي خطر محتمل",
+    "أشعر بالتشجيع على طرح أفكار لتحسين الجودة وسلامة الغذاء",
+    "إجراءات التشغيل القياسية في منطقتي واضحة وسهلة التطبيق",
+    "ألتزم بإجراءات التشغيل القياسية حتى عند العمل تحت الضغط",
+    "يتم التعامل مع عدم الالتزام بقواعد سلامة الغذاء بشكل عادل",
+    "الأدوات والمعدات اللازمة للعمل بأمان متوفرة وفي حالة جيدة",
+    "بيئة عملي نظيفة ومنظمة وتدعم ممارسات النظافة الجيدة",
+    "تتوفر الموارد اللازمة للحفاظ على الجودة وسلامة الغذاء",
+    "يتم التعامل بسرعة مع مشكلات الصيانة المؤثرة على السلامة",
+    "يتم مشاركة الدروس المستفادة من الحوادث مع الموظفين",
+    "ألاحظ وجود مبادرات للتحسين المستمر في الجودة وسلامة الغذاء",
+    "أعتقد أن الشركة ملتزمة بالتحسين المستمر على المدى الطويل",
+  ];
+
+  for (let q = 0; q < TOTAL_Q; q++) {
+    const qAns   = rows.map(r => r.answers[q]).filter(Boolean);
+    const total  = qAns.length || 1;
+    const yes    = qAns.filter(a=>a==='yes').length;
+    const som    = qAns.filter(a=>a==='sometimes').length;
+    const no     = qAns.filter(a=>a==='no').length;
+    const pctY   = Math.round(yes/total*100);
+    const pctS   = Math.round(som/total*100);
+    const pctN   = Math.round(no/total*100);
+    const weak   = pctY < 60 ? '⚠️ ' : '';
+
+    wrap.innerHTML += `
+      <div class="q-row">
+        <div class="q-text">${weak}<strong>Q${q+1}.</strong> ${QLABELS[q]}</div>
+        <div class="q-bars">
+          <div class="q-bar-yes"    style="flex:${pctY}"></div>
+          <div class="q-bar-sometimes" style="flex:${pctS}"></div>
+          <div class="q-bar-no"    style="flex:${pctN}"></div>
+        </div>
+        <div class="q-legend">
+          <span class="q-leg-item"><span class="q-leg-dot" style="background:#52b788"></span>نعم ${pctY}%</span>
+          <span class="q-leg-item"><span class="q-leg-dot" style="background:#f4a261"></span>أحياناً ${pctS}%</span>
+          <span class="q-leg-item"><span class="q-leg-dot" style="background:#d62828"></span>لا ${pctN}%</span>
+        </div>
+      </div>`;
+  }
+}
+
+/* ── TREND ── */
+function renderTrend(rows) {
+  const byDate = {};
+  rows.forEach(r => {
+    const d = r.timestamp ? r.timestamp.substring(0,10) : 'unknown';
+    if (!byDate[d]) byDate[d] = { yes:0, total:0 };
+    r.answers.forEach(a => { byDate[d].total++; if(a==='yes') byDate[d].yes++; });
+  });
+  const labels = Object.keys(byDate).sort();
+  const values = labels.map(d => Math.round(byDate[d].yes/(byDate[d].total||1)*100));
+
+  if (trendChart) trendChart.destroy();
+  if (labels.length < 2) {
+    document.getElementById('trend-chart').style.display = 'none';
+    document.querySelector('.chart-wrap:last-of-type').innerHTML = '<div class="trend-empty">📅 بيانات غير كافية لعرض الاتجاه<br>Not enough data for trend</div>';
+    return;
+  }
+  document.getElementById('trend-chart').style.display = '';
+  trendChart = new Chart(document.getElementById('trend-chart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        data:values, borderColor:'#52b788', backgroundColor:'rgba(82,183,136,.12)',
+        borderWidth:2, pointRadius:4, pointBackgroundColor:'#52b788', fill:true, tension:.3
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ min:0, max:100, ticks:{ callback:v=>v+'%', font:{size:10} }, grid:{color:'#eef2ee'} },
+        x:{ ticks:{ font:{size:9}, maxRotation:30 } }
+      }
+    }
+  });
+}
+
+/* ── RECENT ── */
+function renderRecent(rows) {
+  const wrap = document.getElementById('recent-list');
+  const sorted = [...rows].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0,10);
+  if (!sorted.length) { wrap.innerHTML = '<div class="trend-empty">لا توجد بيانات / No data</div>'; return; }
+  wrap.innerHTML = sorted.map(r => {
+    const yes  = r.answers.filter(a=>a==='yes').length;
+    const pct  = Math.round(yes/TOTAL_Q*100);
+    const cls  = pct>=75?'score-high':pct>=50?'score-mid':'score-low';
+    const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString('ar-EG') : '—';
+    return `<div class="resp-item">
+      <div><div class="resp-dept">${r.dept||'—'}</div><div class="resp-date">${date}</div></div>
+      <span class="resp-score ${cls}">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── HELPERS ── */
+function show(id){ document.getElementById(id).style.display='flex'; if(id==='main') document.getElementById(id).style.display='block'; }
+function hide(id){ document.getElementById(id).style.display='none'; }
+
+loadData();
+</script>
+</body>
+</html>
