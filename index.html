@@ -4,79 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Food Safety Culture Survey</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --green-dark:#1a4731;--green-mid:#2d6a4f;--green-light:#52b788;
-      --green-pale:#d8f3dc;--white:#fff;--gray-50:#f8faf8;--gray-100:#eef2ee;
-      --gray-300:#c5d1c5;--gray-500:#6b7f6b;--gray-800:#1e2b1e;--danger:#d62828;
-      --shadow-sm:0 1px 4px rgba(0,0,0,.08);--shadow-md:0 4px 16px rgba(0,0,0,.12);
-      --radius:14px;--radius-sm:8px;
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh;display:flex;flex-direction:column}
-    .app-header{background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:#fff;padding:20px 20px 34px;text-align:center;position:relative}
-    .app-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:var(--gray-50);border-radius:20px 20px 0 0}
-    .header-icon{width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px}
-    .app-header h1{font-size:17px;font-weight:700;line-height:1.4}
-    .app-header p{font-size:11px;opacity:.7;margin-top:4px}
-    .header-intro{margin:16px 4px 0;background:rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;text-align:right}
-    .header-intro p{font-size:12px;line-height:2;color:#fff;opacity:.95}
-    .header-intro .intro-note{margin-top:10px;padding:10px 12px;background:rgba(255,255,255,.15);border-radius:8px;font-size:11.5px;font-weight:600;line-height:1.9;color:#fff}
-    .screen{display:none;flex:1;padding:20px 16px 48px}
-    .screen.active{display:flex;flex-direction:column}
-    .intro-banner{background:#fff;border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow-sm);margin-top:4px;margin-bottom:12px;border-right:4px solid var(--green-light)}
-    .intro-banner p{font-size:12.5px;line-height:2;color:var(--gray-800);text-align:right}
-    .intro-banner .intro-note{margin-top:12px;padding:10px 14px;background:var(--green-pale);border-radius:var(--radius-sm);font-size:12px;color:var(--green-dark);font-weight:600;line-height:1.8}
-    .login-card{background:#fff;border-radius:var(--radius);padding:28px 20px;box-shadow:var(--shadow-md);margin-top:0}
-    .login-card h2{font-size:16px;font-weight:700;color:var(--green-dark);margin-bottom:6px}
-    .subtitle{font-size:12px;color:var(--gray-500);margin-bottom:24px;line-height:1.7}
-    .field-label{font-size:13px;font-weight:600;margin-bottom:8px;display:block}
-    .field-input{width:100%;padding:14px 16px;border:2px solid var(--gray-300);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;text-align:center;color:var(--green-dark);transition:border-color .2s;outline:none;direction:ltr}
-    .field-input:focus{border-color:var(--green-light)}
-    .field-input::placeholder{font-size:13px;letter-spacing:0;color:var(--gray-300);font-weight:400}
-    .btn-primary{width:100%;margin-top:20px;padding:16px;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-primary:active{opacity:.9}
-    .btn-primary:disabled{opacity:.55;cursor:not-allowed}
-    .msg-box{margin-top:14px;padding:13px 14px;border-radius:var(--radius-sm);font-size:13px;text-align:center;display:none;line-height:1.6}
-    .msg-box.visible{display:block}
-    .msg-error{background:#fff0f0;border:1px solid #fcc;color:var(--danger)}
-    .msg-loading{background:var(--green-pale);color:var(--green-dark)}
-    .msg-done{background:#fffbe6;border:1px solid #ffe58f;color:#7c5e00}
-    .user-badge{background:#fff;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
-    .user-avatar{width:40px;height:40px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-    .user-name{font-size:13px;font-weight:700;color:var(--green-dark)}
-    .user-dept{font-size:11px;color:var(--gray-500);margin-top:2px}
-    .progress-wrap{background:#fff;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
-    .progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .progress-label{font-size:12px;color:var(--gray-500)}
-    .progress-count{font-size:12px;font-weight:700;color:var(--green-dark)}
-    .progress-bar-bg{height:6px;background:var(--gray-100);border-radius:99px;overflow:hidden}
-    .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--green-light),var(--green-mid));border-radius:99px;transition:width .4s ease;width:0%}
-    .section-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green-mid);padding:6px 4px 10px;margin-top:6px;border-bottom:2px solid var(--green-pale);margin-bottom:12px}
-    .question-card{background:#fff;border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm);border-right:4px solid var(--gray-100);transition:border-color .2s}
-    .question-card.answered{border-right-color:var(--green-light)}
-    .q-number{font-size:10px;font-weight:700;color:var(--green-mid);background:var(--green-pale);display:inline-block;padding:2px 8px;border-radius:99px;margin-bottom:8px}
-    .q-text-ar{font-size:13px;font-weight:600;line-height:1.7;margin-bottom:4px}
-    .q-text-en{font-size:11px;color:var(--gray-500);line-height:1.5;margin-bottom:12px;font-family:'Inter',sans-serif;direction:ltr;text-align:left}
-    .answer-row{display:flex;gap:8px}
-    .answer-btn{flex:1;padding:10px 4px;border:2px solid var(--gray-300);border-radius:var(--radius-sm);background:#fff;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;color:var(--gray-500);cursor:pointer;text-align:center;line-height:1.4}
-    .answer-btn:active{transform:scale(.95)}
-    .answer-btn.sel-yes{background:#d8f3dc;border-color:#52b788;color:#1a4731}
-    .answer-btn.sel-sometimes{background:#fff4e0;border-color:#f4a261;color:#b36200}
-    .answer-btn.sel-no{background:#ffe8e8;border-color:#d62828;color:#d62828}
-    .btn-submit{width:100%;margin-top:20px;padding:18px;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-submit:active{opacity:.9}
-    .btn-submit:disabled{opacity:.5;cursor:not-allowed}
-    .success-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px}
-    .success-icon{width:84px;height:84px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:24px;box-shadow:0 0 0 14px rgba(82,183,136,.12)}
-    .success-wrap h2{font-size:20px;font-weight:700;color:var(--green-dark);margin-bottom:12px}
-    .success-wrap p{font-size:14px;color:var(--gray-500);line-height:1.8;max-width:280px}
-    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
-    .spinner.visible{display:block}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  </style>
-</head>
+  <link rel="stylesheet" href="savola.css"/>
+  </head>
 <body>
 
 <div class="app-header">
@@ -125,17 +54,17 @@
   <div id="q-container"></div>
 
   <!-- SUGGESTION BOX -->
-  <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-right:4px solid #f4a261">
-    <div style="font-size:13px;font-weight:700;color:#1a4731;margin-bottom:6px">💡 مقترحاتك / Your Suggestions</div>
-    <div style="font-size:11px;color:#6b7f6b;margin-bottom:10px">شاركنا أي مقترحات أو ملاحظات لتحسين بيئة العمل<br>Share any suggestions to improve the work environment</div>
-    <textarea id="suggestion-box" rows="4" style="width:100%;padding:12px;border:1.5px solid #c5d1c5;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;color:#1e2b1e;resize:none;outline:none;line-height:1.7" placeholder="اكتب مقترحك هنا… / Write your suggestion here…"></textarea>
+  <div class="suggestion-wrap">
+    <div class="suggestion-title">💡 مقترحاتك / Your Suggestions</div>
+    <div class="suggestion-sub">شاركنا أي مقترحات أو ملاحظات لتحسين بيئة العمل<br>Share any suggestions to improve the work environment</div>
+    <textarea id="suggestion-box" class="suggestion-textarea" rows="4" placeholder="اكتب مقترحك هنا… / Write your suggestion here…"></textarea>
   </div>
 
   <!-- HOTLINE LINK -->
-  <div style="background:#fff0f4;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+  <div class="hotline-wrap">
     <span style="font-size:20px">🔒</span>
     <div>
-      <div style="font-size:12px;font-weight:700;color:#8b0000;margin-bottom:2px">الإبلاغ السري / Confidential Reporting</div>
+      <div class="hotline-title">الإبلاغ السري / Confidential Reporting</div>
       <a href="https://hotline.savola.com/en/Home.aspx" target="_blank" style="font-size:11px;color:#d62828;text-decoration:underline">hotline.savola.com</a>
     </div>
   </div>
