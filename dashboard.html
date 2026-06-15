@@ -101,7 +101,13 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
 .chart-wrap{position:relative;height:220px}
 
 /* TREND */
-.trend-empty{text-align:center;padding:24px;font-size:12px;color:var(--gray-400)}
+.sugg-card{background:var(--gray-50);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;border-right:3px solid var(--amber)}
+.sugg-card:last-child{margin-bottom:0}
+.sugg-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sugg-dept{font-size:11px;font-weight:700;color:var(--green-dark);background:var(--green-pale);padding:2px 8px;border-radius:99px}
+.sugg-date{font-size:10px;color:var(--gray-400);font-family:'Inter',sans-serif}
+.sugg-text{font-size:12.5px;color:var(--gray-800);line-height:1.8}
+
 
 /* RESPONSE LIST */
 .resp-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--gray-100);font-size:12px}
@@ -154,10 +160,29 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
     <div>
       <label>الفترة / Period</label>
       <select class="filter-select" id="filter-period" onchange="applyFilter()">
-        <option value="0">كل الوقت / All time</option>
-        <option value="7">آخر 7 أيام</option>
-        <option value="30">آخر 30 يوم</option>
-        <option value="90">آخر 3 أشهر</option>
+        <option value="all">كل الوقت / All time</option>
+        <optgroup label="── بالشهر / Month ──">
+          <option value="m:01">يناير / January</option>
+          <option value="m:02">فبراير / February</option>
+          <option value="m:03">مارس / March</option>
+          <option value="m:04">أبريل / April</option>
+          <option value="m:05">مايو / May</option>
+          <option value="m:06">يونيو / June</option>
+          <option value="m:07">يوليو / July</option>
+          <option value="m:08">أغسطس / August</option>
+          <option value="m:09">سبتمبر / September</option>
+          <option value="m:10">أكتوبر / October</option>
+          <option value="m:11">نوفمبر / November</option>
+          <option value="m:12">ديسمبر / December</option>
+        </optgroup>
+        <optgroup label="── بالكوارتر / Quarter ──">
+          <option value="q:1">Q1 – يناير → مارس</option>
+          <option value="q:2">Q2 – أبريل → يونيو</option>
+          <option value="q:3">Q3 – يوليو → سبتمبر</option>
+          <option value="q:4">Q4 – أكتوبر → ديسمبر</option>
+        </optgroup>
+        <optgroup label="── بالسنة / Year ──" id="year-options">
+        </optgroup>
       </select>
     </div>
     <button class="btn-refresh" onclick="loadData()">🔄 تحديث / Refresh</button>
@@ -220,6 +245,12 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
     <div id="recent-list"></div>
   </div>
 
+  <!-- SUGGESTIONS -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>مقترحات الموظفين / Employee Suggestions</div>
+    <div id="suggestions-list"><div class="trend-empty">لا توجد مقترحات / No suggestions</div></div>
+  </div>
+
 </div><!-- /main -->
 
 <script>
@@ -262,17 +293,36 @@ function populateDeptFilter() {
   const sel = document.getElementById('filter-dept');
   sel.innerHTML = '<option value="">الكل / All</option>';
   depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
+
+  // Populate year options dynamically
+  const years = [...new Set(allData.map(r => r.timestamp ? new Date(r.timestamp).getFullYear() : null).filter(Boolean))].sort((a,b)=>b-a);
+  const yGrp = document.getElementById('year-options');
+  yGrp.innerHTML = '';
+  years.forEach(y => { const o = document.createElement('option'); o.value = `y:${y}`; o.textContent = y; yGrp.appendChild(o); });
 }
 
 /* ── FILTER & RENDER ── */
 function applyFilter() {
   const dept   = document.getElementById('filter-dept').value;
-  const days   = parseInt(document.getElementById('filter-period').value);
-  const cutoff = days > 0 ? Date.now() - days * 86400000 : 0;
+  const period = document.getElementById('filter-period').value;
 
   const filtered = allData.filter(r => {
     if (dept && r.dept !== dept) return false;
-    if (cutoff && new Date(r.timestamp) < cutoff) return false;
+    if (period === 'all') return true;
+    const d = r.timestamp ? new Date(r.timestamp) : null;
+    if (!d) return false;
+    if (period.startsWith('m:')) {
+      const m = period.split(':')[1];
+      return String(d.getMonth()+1).padStart(2,'0') === m;
+    }
+    if (period.startsWith('q:')) {
+      const q = parseInt(period.split(':')[1]);
+      const mo = d.getMonth()+1;
+      return Math.ceil(mo/3) === q;
+    }
+    if (period.startsWith('y:')) {
+      return d.getFullYear() === parseInt(period.split(':')[1]);
+    }
     return true;
   });
 
@@ -283,6 +333,7 @@ function applyFilter() {
   renderQuestions(filtered);
   renderTrend(filtered);
   renderRecent(filtered);
+  renderSuggestions(filtered);
 }
 
 /* ── KPI ── */
@@ -375,10 +426,31 @@ function renderDeptChart(rows) {
     data:{ labels, datasets:[{ data:values, backgroundColor:colors, borderRadius:6, borderSkipped:false }] },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ctx.parsed.y + '%' } } },
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label: ctx => ctx.parsed.y + '%' } }
+      },
       scales:{
-        y:{ min:0, max:100, ticks:{ callback: v=>v+'%', font:{size:10} }, grid:{color:'#eef2ee'} },
+        y:{ min:0, max:110, ticks:{ callback: v=>v<=100?v+'%':'', font:{size:10} }, grid:{color:'#eef2ee'} },
         x:{ ticks:{ font:{size:9}, maxRotation:30 } }
+      },
+      animation:{
+        onComplete: function() {
+          const chart = this;
+          const ctx2  = chart.ctx;
+          ctx2.save();
+          ctx2.font = 'bold 11px Cairo,Inter,sans-serif';
+          ctx2.textAlign = 'center';
+          ctx2.textBaseline = 'bottom';
+          chart.data.datasets.forEach((dataset, i) => {
+            chart.getDatasetMeta(i).data.forEach((bar, idx) => {
+              const val = dataset.data[idx];
+              ctx2.fillStyle = val>=75?'#1a4731':val>=50?'#b36200':'#d62828';
+              ctx2.fillText(val+'%', bar.x, bar.y - 3);
+            });
+          });
+          ctx2.restore();
+        }
       }
     }
   });
@@ -447,37 +519,45 @@ function renderQuestions(rows) {
 
 /* ── TREND ── */
 function renderTrend(rows) {
-  const byDate = {};
+  const byMonth = {};
   rows.forEach(r => {
-    const d = r.timestamp ? r.timestamp.substring(0,10) : 'unknown';
-    if (!byDate[d]) byDate[d] = { yes:0, total:0 };
-    r.answers.forEach(a => { byDate[d].total++; if(a==='yes') byDate[d].yes++; });
+    if (!r.timestamp) return;
+    const d   = new Date(r.timestamp);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if (!byMonth[key]) byMonth[key] = { yes:0, total:0 };
+    r.answers.forEach(a => { byMonth[key].total++; if(a==='yes') byMonth[key].yes++; });
   });
-  const labels = Object.keys(byDate).sort();
-  const values = labels.map(d => Math.round(byDate[d].yes/(byDate[d].total||1)*100));
+  const keys   = Object.keys(byMonth).sort();
+  const labels = keys.map(k => {
+    const [y,m] = k.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(m)-1]} ${y}`;
+  });
+  const values = keys.map(k => Math.round(byMonth[k].yes/(byMonth[k].total||1)*100));
 
   if (trendChart) trendChart.destroy();
-  if (labels.length < 2) {
-    document.getElementById('trend-chart').style.display = 'none';
-    document.querySelector('.chart-wrap:last-of-type').innerHTML = '<div class="trend-empty">📅 بيانات غير كافية لعرض الاتجاه<br>Not enough data for trend</div>';
+  const trendEl = document.getElementById('trend-chart');
+  if (keys.length < 1) {
+    trendEl.style.display='none';
+    trendEl.parentElement.innerHTML='<div class="trend-empty">📅 بيانات غير كافية لعرض الاتجاه<br>Not enough data for trend</div>';
     return;
   }
-  document.getElementById('trend-chart').style.display = '';
-  trendChart = new Chart(document.getElementById('trend-chart'), {
+  trendEl.style.display='';
+  trendChart = new Chart(trendEl, {
     type:'line',
     data:{
       labels,
       datasets:[{
         data:values, borderColor:'#52b788', backgroundColor:'rgba(82,183,136,.12)',
-        borderWidth:2, pointRadius:4, pointBackgroundColor:'#52b788', fill:true, tension:.3
+        borderWidth:2, pointRadius:5, pointBackgroundColor:'#52b788', fill:true, tension:.3
       }]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ctx.parsed.y+'%' } } },
       scales:{
         y:{ min:0, max:100, ticks:{ callback:v=>v+'%', font:{size:10} }, grid:{color:'#eef2ee'} },
-        x:{ ticks:{ font:{size:9}, maxRotation:30 } }
+        x:{ ticks:{ font:{size:10}, maxRotation:30 } }
       }
     }
   });
@@ -496,6 +576,27 @@ function renderRecent(rows) {
     return `<div class="resp-item">
       <div><div class="resp-dept">${r.dept||'—'}</div><div class="resp-date">${date}</div></div>
       <span class="resp-score ${cls}">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── SUGGESTIONS ── */
+function renderSuggestions(rows) {
+  const wrap = document.getElementById('suggestions-list');
+  const withSugg = rows.filter(r => r.suggestion && r.suggestion.trim());
+  if (!withSugg.length) {
+    wrap.innerHTML = '<div class="trend-empty">💬 لا توجد مقترحات في هذه الفترة<br>No suggestions for this period</div>';
+    return;
+  }
+  const sorted = [...withSugg].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+  wrap.innerHTML = sorted.map(r => {
+    const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString('ar-EG', {year:'numeric',month:'long',day:'numeric'}) : '—';
+    return `<div class="sugg-card">
+      <div class="sugg-meta">
+        <span class="sugg-dept">🏢 ${r.dept||'—'}</span>
+        <span class="sugg-date">📅 ${date}</span>
+      </div>
+      <div class="sugg-text">💬 ${r.suggestion}</div>
     </div>`;
   }).join('');
 }
