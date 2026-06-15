@@ -512,3 +512,16 @@ table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th, td { padding: 8px 10px; border: 1px solid var(--grey-border); text-align: right; }
 th { background: var(--grey-pale); font-weight: 700; color: var(--grey); }
 tr:nth-child(even) td { background: var(--off-white); }
+
+/* ── ANSWER BUTTON ICONS ── */
+.ans-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 4px;
+}
+.answer-btn {
+  padding: 10px 6px 8px;
+  line-height: 1.3;
+}
