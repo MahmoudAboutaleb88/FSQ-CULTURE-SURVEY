@@ -312,7 +312,7 @@ function renderOverall(rows) {
   const allAns = rows.flatMap(r => r.answers);
   const total = allAns.length || 1;
   const yes  = allAns.filter(a=>a==='yes').length;
-  const som  = allAns.filter(a=>a==='sometimes').length;
+  const som  = allAns.filter(a=>a==='maybe').length;
   const no   = allAns.filter(a=>a==='no').length;
   const pctY = Math.round(yes/total*100);
   const pctS = Math.round(som/total*100);
@@ -421,7 +421,7 @@ function renderQuestions(rows) {
     const qAns   = rows.map(r => r.answers[q]).filter(Boolean);
     const total  = qAns.length || 1;
     const yes    = qAns.filter(a=>a==='yes').length;
-    const som    = qAns.filter(a=>a==='sometimes').length;
+    const som    = qAns.filter(a=>a==='maybe').length;
     const no     = qAns.filter(a=>a==='no').length;
     const pctY   = Math.round(yes/total*100);
     const pctS   = Math.round(som/total*100);
