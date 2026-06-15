@@ -613,3 +613,74 @@ tr:nth-child(even) td { background: var(--off-white); }
   padding: 10px 6px 8px;
   line-height: 1.3;
 }
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════ */
+
+/* 1. Card fade-in-up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.question-card {
+  animation: fadeInUp .35s ease both;
+}
+
+/* 2. Answer button bounce on select */
+@keyframes btnPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  70%  { transform: scale(.95); }
+  100% { transform: scale(1); }
+}
+.answer-btn.sel-yes,
+.answer-btn.sel-sometimes,
+.answer-btn.sel-no {
+  animation: btnPop .3s ease;
+}
+
+/* 3. Slide-in border from right */
+@keyframes borderSlide {
+  from { border-right-width: 0px; }
+  to   { border-right-width: 4px; }
+}
+.question-card.answered-yes,
+.question-card.answered-sometimes,
+.question-card.answered-no {
+  animation: borderSlide .25s ease;
+}
+
+/* 4. Success screen scale-in */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.success-card {
+  animation: scaleIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* 5. Pill count pulse */
+@keyframes pillPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.pill-count.pulse {
+  animation: pillPulse .3s ease;
+}
+
+/* 6. Section header slide-in */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.section-header {
+  animation: slideInRight .3s ease both;
+}
+
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
