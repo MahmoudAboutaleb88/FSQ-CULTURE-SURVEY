@@ -44,9 +44,9 @@
 <!-- ② SURVEY -->
 <div class="screen" id="screen-survey">
   <div class="user-badge">
-    <div class="user-avatar">👤</div>
+    <div class="user-avatar" id="disp-avatar">👤</div>
     <div>
-      <div class="user-name" id="disp-name">—</div>
+      <div class="user-welcome">أهلاً، <span id="disp-name">—</span> 👋</div>
       <div class="user-dept" id="disp-dept">—</div>
     </div>
   </div>
@@ -64,13 +64,17 @@
     </div>
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar"></div></div>
   </div>
+  <!-- SECTION PROGRESS -->
+  <div class="section-progress" id="section-progress"></div>
+
   <div id="q-container"></div>
 
   <!-- SUGGESTION BOX -->
   <div class="suggestion-wrap">
     <div class="suggestion-title">💡 مقترحاتك / Your Suggestions</div>
     <div class="suggestion-sub">شاركنا أي مقترحات أو ملاحظات لتحسين بيئة العمل<br>Share any suggestions to improve the work environment</div>
-    <textarea id="suggestion-box" class="suggestion-textarea" rows="4" placeholder="اكتب مقترحك هنا… / Write your suggestion here…"></textarea>
+    <textarea id="suggestion-box" class="suggestion-textarea" rows="4" placeholder="اكتب مقترحك هنا… / Write your suggestion here…" maxlength="500" oninput="updateCharCount()"></textarea>
+    <div class="char-count"><span id="char-count">0</span> / 500</div>
   </div>
 
   <!-- HOTLINE LINK -->
@@ -82,18 +86,34 @@
     </div>
   </div>
 
-  <button class="btn-submit" id="btn-submit" onclick="doSubmit()" disabled>
+  <button class="btn-submit" id="btn-submit" onclick="openSummaryModal()" disabled>
     <span id="submit-label">إرسال الاستبيان / Submit Survey</span>
     <div class="spinner" id="submit-spinner"></div>
   </button>
 </div>
 
+<!-- SCROLL TO TOP -->
+<button class="scroll-top-btn" id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
 <!-- ③ SUCCESS -->
 <div class="screen" id="screen-success">
   <div class="success-wrap">
-    <div class="success-icon">✅</div>
-    <h2>شكراً لمشاركتك!<br>Thank you!</h2>
+    <div class="success-icon">🏆</div>
+    <h2>شكراً <span id="success-name"></span>!<br>Thank you!</h2>
     <p>تم إرسال إجاباتك بنجاح وستُستخدم لتحسين ثقافة سلامة الغذاء.<br><br>Your responses were submitted successfully.</p>
+    <div class="success-stats" id="success-stats"></div>
+  </div>
+</div>
+
+<!-- SUMMARY MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-title">📊 ملخص إجاباتك / Summary</div>
+    <div class="modal-summary" id="modal-summary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">مراجعة / Review</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmSubmit()">إرسال / Submit ✓</button>
+    </div>
   </div>
 </div>
 
@@ -153,6 +173,29 @@ const TOTAL = ALL_Q.length;
 let answers = {};
 let currentUser = {};
 
+/* ── SECTION PROGRESS ── */
+function updateSectionProgress() {
+  const wrap = document.getElementById('section-progress');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  let idx = 0;
+  SECTIONS.forEach((sec, si) => {
+    const total = sec.qs.length;
+    let done = 0;
+    for (let i = idx; i < idx + total; i++) if (answers[i]) done++;
+    const pct = Math.round((done / total) * 100);
+    const complete = done === total;
+    const div = document.createElement('div');
+    div.className = 'sec-pill' + (complete ? ' sec-pill-done' : '');
+    div.innerHTML = `
+      <span class="sec-pill-label">${sec.ar}</span>
+      <div class="sec-pill-bar"><div class="sec-pill-fill" style="width:${pct}%"></div></div>
+      <span class="sec-pill-pct">${done}/${total}</span>`;
+    wrap.appendChild(div);
+    idx += total;
+  });
+}
+
 /* ── BUILD ── */
 function buildSurvey() {
   const c = document.getElementById('q-container');
@@ -211,6 +254,7 @@ function updateProg() {
   pillCount.classList.add('pulse');
   document.getElementById('pill-bar').style.width = pct;
   document.getElementById('btn-submit').disabled = done < TOTAL;
+  updateSectionProgress();
 }
 
 /* ── LOGIN ──
@@ -273,6 +317,50 @@ async function doLogin() {
 }
 
 /* ── SUBMIT ── */
+/* ── SUMMARY MODAL ── */
+function openSummaryModal() {
+  const yes = Object.values(answers).filter(a => a === 'yes').length;
+  const sometimes = Object.values(answers).filter(a => a === 'sometimes').length;
+  const no = Object.values(answers).filter(a => a === 'no').length;
+  const unanswered = TOTAL - Object.keys(answers).length;
+
+  if (unanswered > 0) {
+    highlightUnanswered();
+    return;
+  }
+
+  const pct = Math.round((yes / TOTAL) * 100);
+  document.getElementById('modal-summary').innerHTML = `
+    <div class="summary-row"><span class="summary-dot dot-yes"></span><span>نعم / Yes</span><strong>${yes}</strong></div>
+    <div class="summary-row"><span class="summary-dot dot-sometimes"></span><span>أحياناً / Sometimes</span><strong>${sometimes}</strong></div>
+    <div class="summary-row"><span class="summary-dot dot-no"></span><span>لا / No</span><strong>${no}</strong></div>
+    <div class="summary-divider"></div>
+    <div class="summary-score">نسبة الامتثال / Compliance: <strong>${pct}%</strong></div>`;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+
+function highlightUnanswered() {
+  let first = null;
+  for (let i = 0; i < TOTAL; i++) {
+    const card = document.getElementById('qc' + i);
+    if (!answers[i]) {
+      card.classList.add('unanswered-highlight');
+      if (!first) first = card;
+      setTimeout(() => card.classList.remove('unanswered-highlight'), 2500);
+    }
+  }
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function confirmSubmit() {
+  closeModal();
+  await doSubmit();
+}
+
 function launchConfetti() {
   const colors = ['#a8d62b','#f59e0b','#ef4444','#3b82f6','#8b5cf6'];
   for (let i = 0; i < 60; i++) {
@@ -316,6 +404,14 @@ async function doSubmit() {
     try { data = JSON.parse(text); } catch { data = { status: text.includes('ok') ? 'ok' : 'error' }; }
 
     if (data.status === 'ok') {
+      document.getElementById('success-name').textContent = currentUser.name;
+      const y = Object.values(answers).filter(a=>a==='yes').length;
+      const s = Object.values(answers).filter(a=>a==='sometimes').length;
+      const n = Object.values(answers).filter(a=>a==='no').length;
+      document.getElementById('success-stats').innerHTML =
+        `<span class="stat-badge badge-yes">✅ نعم: ${y}</span>
+         <span class="stat-badge badge-sometimes">🟡 أحياناً: ${s}</span>
+         <span class="stat-badge badge-no">❌ لا: ${n}</span>`;
       launchConfetti();
       showScreen('screen-success');
     } else {
@@ -353,6 +449,18 @@ function setSubmitBusy(on) {
   document.getElementById('btn-submit').disabled = on;
   document.getElementById('submit-spinner').classList.toggle('visible', on);
   document.getElementById('submit-label').style.display = on ? 'none' : '';
+}
+
+/* ── SCROLL TO TOP ── */
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scroll-top-btn');
+  if (btn) btn.classList.toggle('visible', window.scrollY > 300);
+});
+
+/* ── CHAR COUNTER ── */
+function updateCharCount() {
+  const val = document.getElementById('suggestion-box').value.length;
+  document.getElementById('char-count').textContent = val;
 }
 
 document.getElementById('emp-id').addEventListener('keydown', e => {
