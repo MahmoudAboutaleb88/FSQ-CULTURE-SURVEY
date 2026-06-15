@@ -290,9 +290,7 @@ body {
   border-right: 4px solid var(--grey-pale);
   transition: border-right-color .2s;
 }
-.question-card.answered-yes       { border-right-color: var(--lime); }
-.question-card.answered-sometimes { border-right-color: var(--orange); }
-.question-card.answered-no        { border-right-color: var(--danger); }
+.question-card.answered { border-right-color: var(--lime); }
 .q-number {
   font-size: 10px; font-weight: 700; color: var(--lime-dark);
   background: var(--lime-pale);
@@ -306,14 +304,14 @@ body {
 /* ── ANSWER BUTTONS ── */
 .answer-row { display: flex; gap: 8px; }
 .answer-btn {
-  flex: 1; padding: 6px 4px;
+  flex: 1; padding: 3px 4px;
   border: 2px solid var(--grey-border);
   border-radius: var(--radius-sm);
   background: var(--white);
   font-family: var(--font-main);
   font-size: 11px; font-weight: 600;
   color: var(--text-muted);
-  cursor: pointer; text-align: center; line-height: 1.4;
+  cursor: pointer; text-align: center; line-height: 1.3;
 }
 .answer-btn:active { transform: scale(.95); }
 .answer-btn.sel-yes       { background: var(--lime-pale);   border-color: var(--lime);   color: var(--lime-dark); }
