@@ -158,31 +158,21 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
       </select>
     </div>
     <div>
-      <label>الفترة / Period</label>
-      <select class="filter-select" id="filter-period" onchange="applyFilter()">
-        <option value="all">كل الوقت / All time</option>
-        <optgroup label="── بالشهر / Month ──">
-          <option value="m:01">يناير / January</option>
-          <option value="m:02">فبراير / February</option>
-          <option value="m:03">مارس / March</option>
-          <option value="m:04">أبريل / April</option>
-          <option value="m:05">مايو / May</option>
-          <option value="m:06">يونيو / June</option>
-          <option value="m:07">يوليو / July</option>
-          <option value="m:08">أغسطس / August</option>
-          <option value="m:09">سبتمبر / September</option>
-          <option value="m:10">أكتوبر / October</option>
-          <option value="m:11">نوفمبر / November</option>
-          <option value="m:12">ديسمبر / December</option>
-        </optgroup>
-        <optgroup label="── بالكوارتر / Quarter ──">
-          <option value="q:1">Q1 – يناير → مارس</option>
-          <option value="q:2">Q2 – أبريل → يونيو</option>
-          <option value="q:3">Q3 – يوليو → سبتمبر</option>
-          <option value="q:4">Q4 – أكتوبر → ديسمبر</option>
-        </optgroup>
-        <optgroup label="── بالسنة / Year ──" id="year-options">
-        </optgroup>
+      <label>الشهر / Month</label>
+      <select class="filter-select" id="filter-month" onchange="applyFilter()">
+        <option value="">الكل / All</option>
+      </select>
+    </div>
+    <div>
+      <label>الكوارتر / Quarter</label>
+      <select class="filter-select" id="filter-quarter" onchange="applyFilter()">
+        <option value="">الكل / All</option>
+      </select>
+    </div>
+    <div>
+      <label>السنة / Year</label>
+      <select class="filter-select" id="filter-year" onchange="applyFilter()">
+        <option value="">الكل / All</option>
       </select>
     </div>
     <button class="btn-refresh" onclick="loadData()">🔄 تحديث / Refresh</button>
@@ -254,7 +244,7 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
 </div><!-- /main -->
 
 <script>
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFGYFbYSVrkATCq8gyDXJ75TJyr_fNyG0fVJUlUkgoC1RZ9-kQljc-eqg7ZBtJPjQdDg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziGLb3-7pNXPYEij908d_7bVekjvcZooH5yE_kWc48oF4yA9i-E9MywxJ5ccdUdW6T8g/exec";
 
 const SECTIONS = [
   { ar:"القيادة والالتزام",          en:"Leadership & Commitment",        count:5 },
@@ -279,7 +269,7 @@ async function loadData() {
     const data = JSON.parse(text);
     if (data.status !== 'ok') throw new Error(data.message || 'Load error');
     allData = data.rows;
-    populateDeptFilter();
+    populateFilters();
     applyFilter();
     show('main'); hide('loading');
   } catch(e) {
@@ -288,41 +278,82 @@ async function loadData() {
   }
 }
 
-function populateDeptFilter() {
-  const depts = [...new Set(allData.map(r => r.dept).filter(Boolean))].sort();
-  const sel = document.getElementById('filter-dept');
-  sel.innerHTML = '<option value="">الكل / All</option>';
-  depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
+function populateFilters() {
+  const MONTH_NAMES = {
+    '01':'يناير / Jan','02':'فبراير / Feb','03':'مارس / Mar','04':'أبريل / Apr',
+    '05':'مايو / May','06':'يونيو / Jun','07':'يوليو / Jul','08':'أغسطس / Aug',
+    '09':'سبتمبر / Sep','10':'أكتوبر / Oct','11':'نوفمبر / Nov','12':'ديسمبر / Dec'
+  };
+  const Q_NAMES = {
+    '1':'Q1 – يناير → مارس','2':'Q2 – أبريل → يونيو',
+    '3':'Q3 – يوليو → سبتمبر','4':'Q4 – أكتوبر → ديسمبر'
+  };
 
-  // Populate year options dynamically
-  const years = [...new Set(allData.map(r => r.timestamp ? new Date(r.timestamp).getFullYear() : null).filter(Boolean))].sort((a,b)=>b-a);
-  const yGrp = document.getElementById('year-options');
-  yGrp.innerHTML = '';
-  years.forEach(y => { const o = document.createElement('option'); o.value = `y:${y}`; o.textContent = y; yGrp.appendChild(o); });
+  // Dept
+  const depts = [...new Set(allData.map(r => r.dept).filter(Boolean))].sort();
+  const dSel = document.getElementById('filter-dept');
+  dSel.innerHTML = '<option value="">الكل / All</option>';
+  depts.forEach(d => { const o = document.createElement('option'); o.value=d; o.textContent=d; dSel.appendChild(o); });
+
+  // Extract unique months, quarters, years FROM DATA ONLY
+  const months   = new Set();
+  const quarters = new Set();
+  const years    = new Set();
+
+  allData.forEach(r => {
+    if (!r.timestamp) return;
+    const d  = new Date(r.timestamp);
+    const m  = String(d.getMonth()+1).padStart(2,'0');
+    const q  = String(Math.ceil((d.getMonth()+1)/3));
+    const y  = String(d.getFullYear());
+    months.add(m);
+    quarters.add(q);
+    years.add(y);
+  });
+
+  // Month filter
+  const mSel = document.getElementById('filter-month');
+  mSel.innerHTML = '<option value="">الكل / All</option>';
+  [...months].sort().forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = MONTH_NAMES[m] || m; mSel.appendChild(o);
+  });
+
+  // Quarter filter
+  const qSel = document.getElementById('filter-quarter');
+  qSel.innerHTML = '<option value="">الكل / All</option>';
+  [...quarters].sort().forEach(q => {
+    const o = document.createElement('option');
+    o.value = q; o.textContent = Q_NAMES[q] || 'Q'+q; qSel.appendChild(o);
+  });
+
+  // Year filter
+  const ySel = document.getElementById('filter-year');
+  ySel.innerHTML = '<option value="">الكل / All</option>';
+  [...years].sort((a,b)=>b-a).forEach(y => {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y; ySel.appendChild(o);
+  });
 }
 
 /* ── FILTER & RENDER ── */
 function applyFilter() {
-  const dept   = document.getElementById('filter-dept').value;
-  const period = document.getElementById('filter-period').value;
+  const dept    = document.getElementById('filter-dept').value;
+  const month   = document.getElementById('filter-month').value;
+  const quarter = document.getElementById('filter-quarter').value;
+  const year    = document.getElementById('filter-year').value;
 
   const filtered = allData.filter(r => {
     if (dept && r.dept !== dept) return false;
-    if (period === 'all') return true;
+    if (!month && !quarter && !year) return true;
     const d = r.timestamp ? new Date(r.timestamp) : null;
     if (!d) return false;
-    if (period.startsWith('m:')) {
-      const m = period.split(':')[1];
-      return String(d.getMonth()+1).padStart(2,'0') === m;
-    }
-    if (period.startsWith('q:')) {
-      const q = parseInt(period.split(':')[1]);
-      const mo = d.getMonth()+1;
-      return Math.ceil(mo/3) === q;
-    }
-    if (period.startsWith('y:')) {
-      return d.getFullYear() === parseInt(period.split(':')[1]);
-    }
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const q = String(Math.ceil((d.getMonth()+1)/3));
+    const y = String(d.getFullYear());
+    if (month   && m !== month)   return false;
+    if (quarter && q !== quarter) return false;
+    if (year    && y !== year)    return false;
     return true;
   });
 
