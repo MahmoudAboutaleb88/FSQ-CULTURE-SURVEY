@@ -177,6 +177,7 @@ function buildSurvey() {
           <button class="answer-btn" onclick="pick(${i},'sometimes')"><img src="maybe.png" class="ans-icon" alt="أحياناً"/><br>أحياناً<br><small>Sometimes</small></button>
           <button class="answer-btn" onclick="pick(${i},'no')"><img src="false.png" class="ans-icon" alt="لا"/><br>لا<br><small>No</small></button>
         </div>`;
+      d.style.animationDelay = `${idx * 35}ms`;
       c.appendChild(d);
     });
   });
@@ -203,7 +204,11 @@ function updateProg() {
   const pct = `${(done/TOTAL)*100}%`;
   document.getElementById('prog-count').textContent = `${done} / ${TOTAL}`;
   document.getElementById('prog-bar').style.width = pct;
-  document.getElementById('pill-count').textContent = `${done} / ${TOTAL}`;
+  const pillCount = document.getElementById('pill-count');
+  pillCount.textContent = `${done} / ${TOTAL}`;
+  pillCount.classList.remove('pulse');
+  void pillCount.offsetWidth; // reflow to retrigger
+  pillCount.classList.add('pulse');
   document.getElementById('pill-bar').style.width = pct;
   document.getElementById('btn-submit').disabled = done < TOTAL;
 }
@@ -268,6 +273,17 @@ async function doLogin() {
 }
 
 /* ── SUBMIT ── */
+function launchConfetti() {
+  const colors = ['#a8d62b','#f59e0b','#ef4444','#3b82f6','#8b5cf6'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    const size = 6 + Math.random() * 6;
+    el.style.cssText = `position:fixed;width:${size}px;height:${size}px;border-radius:${Math.random()>0.5?'50%':'2px'};background:${colors[Math.floor(Math.random()*colors.length)]};left:${Math.random()*100}vw;top:-12px;opacity:${0.7+Math.random()*0.3};animation:confettiFall ${1+Math.random()*1.5}s ease-in forwards;animation-delay:${Math.random()*0.6}s;z-index:9999;pointer-events:none;`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+
 async function doSubmit() {
   if (Object.keys(answers).length < TOTAL) return;
   setSubmitBusy(true);
@@ -300,6 +316,7 @@ async function doSubmit() {
     try { data = JSON.parse(text); } catch { data = { status: text.includes('ok') ? 'ok' : 'error' }; }
 
     if (data.status === 'ok') {
+      launchConfetti();
       showScreen('screen-success');
     } else {
       alert('فشل الإرسال: ' + (data.message || text.substring(0,100)));
