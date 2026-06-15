@@ -57,6 +57,13 @@
     </div>
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar"></div></div>
   </div>
+
+  <!-- FLOATING PROGRESS PILL -->
+  <div class="progress-pill" id="progress-pill">
+    <span class="pill-label">التقدم</span>
+    <div class="pill-bar-bg"><div class="pill-bar-fill" id="pill-bar"></div></div>
+    <span class="pill-count" id="pill-count">0 / 25</span>
+  </div>
   <div id="q-container"></div>
 
   <!-- SUGGESTION BOX -->
@@ -193,8 +200,11 @@ function pick(i, val) {
 
 function updateProg() {
   const done = Object.keys(answers).length;
+  const pct = `${(done/TOTAL)*100}%`;
   document.getElementById('prog-count').textContent = `${done} / ${TOTAL}`;
-  document.getElementById('prog-bar').style.width = `${(done/TOTAL)*100}%`;
+  document.getElementById('prog-bar').style.width = pct;
+  document.getElementById('pill-count').textContent = `${done} / ${TOTAL}`;
+  document.getElementById('pill-bar').style.width = pct;
   document.getElementById('btn-submit').disabled = done < TOTAL;
 }
 
