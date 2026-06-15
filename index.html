@@ -160,9 +160,9 @@ function buildSurvey() {
         <p class="q-text-ar">${q.ar}</p>
         <p class="q-text-en">${q.en}</p>
         <div class="answer-row">
-          <button class="answer-btn" onclick="pick(${i},'yes')">✅ نعم<br><small>Yes</small></button>
-          <button class="answer-btn" onclick="pick(${i},'sometimes')">🔶 أحياناً<br><small>Sometimes</small></button>
-          <button class="answer-btn" onclick="pick(${i},'no')">❌ لا<br><small>No</small></button>
+          <button class="answer-btn" onclick="pick(${i},'yes')"><img src="true.png" class="ans-icon" alt="نعم"/><br>نعم<br><small>Yes</small></button>
+          <button class="answer-btn" onclick="pick(${i},'sometimes')"><img src="maybe.png" class="ans-icon" alt="أحياناً"/><br>أحياناً<br><small>Sometimes</small></button>
+          <button class="answer-btn" onclick="pick(${i},'no')"><img src="false.png" class="ans-icon" alt="لا"/><br>لا<br><small>No</small></button>
         </div>`;
       c.appendChild(d);
     });
