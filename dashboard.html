@@ -74,7 +74,7 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
 .score-badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px}
 .badge-yes{background:var(--green-pale);color:var(--green-dark)}
-.badge-sometimes{background:var(--amber-pale);color:#b36200}
+.badge-maybe{background:var(--amber-pale);color:#b36200}
 .badge-no{background:var(--red-pale);color:var(--red)}
 
 /* SECTION BARS */
@@ -91,7 +91,7 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
 .q-text{font-size:12px;color:var(--gray-800);line-height:1.6;margin-bottom:6px}
 .q-bars{display:flex;gap:4px;height:6px;border-radius:99px;overflow:hidden}
 .q-bar-yes{background:var(--green-light)}
-.q-bar-sometimes{background:var(--amber)}
+.q-bar-maybe{background:var(--amber)}
 .q-bar-no{background:var(--red)}
 .q-legend{display:flex;gap:10px;margin-top:5px}
 .q-leg-item{font-size:10px;color:var(--gray-600);display:flex;align-items:center;gap:3px}
@@ -117,7 +117,7 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
 .tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;margin:2px}
 .tag-yes{background:var(--green-pale);color:var(--green-dark)}
 .tag-no{background:var(--red-pale);color:var(--red)}
-.tag-sometimes{background:var(--amber-pale);color:#b36200}
+.tag-maybe{background:var(--amber-pale);color:#b36200}
 </style>
 </head>
 <body>
@@ -184,7 +184,7 @@ body{font-family:'Cairo','Inter',sans-serif;background:var(--gray-50);color:var(
       </div>
       <div class="score-badges">
         <span class="badge badge-yes">✅ نعم: <span id="pct-yes">—</span></span>
-        <span class="badge badge-sometimes">🔶 أحياناً: <span id="pct-maybe">—</span></span>
+        <span class="badge badge-maybe">🔶 أحياناً: <span id="pct-maybe">—</span></span>
         <span class="badge badge-no">❌ لا: <span id="pct-no">—</span></span>
       </div>
     </div>
@@ -312,7 +312,7 @@ function renderOverall(rows) {
   const allAns = rows.flatMap(r => r.answers);
   const total = allAns.length || 1;
   const yes  = allAns.filter(a=>a==='yes').length;
-  const som  = allAns.filter(a=>a==='sometimes').length;
+  const som  = allAns.filter(a=>a==='maybe').length;
   const no   = allAns.filter(a=>a==='no').length;
   const pctY = Math.round(yes/total*100);
   const pctS = Math.round(som/total*100);
@@ -320,7 +320,7 @@ function renderOverall(rows) {
 
   document.getElementById('ring-pct').textContent      = pctY + '%';
   document.getElementById('pct-yes').textContent       = pctY + '%';
-  document.getElementById('pct-sometimes').textContent = pctS + '%';
+  document.getElementById('pct-maybe').textContent = pctS + '%';
   document.getElementById('pct-no').textContent        = pctN + '%';
 
   if (ringChart) ringChart.destroy();
@@ -421,7 +421,7 @@ function renderQuestions(rows) {
     const qAns   = rows.map(r => r.answers[q]).filter(Boolean);
     const total  = qAns.length || 1;
     const yes    = qAns.filter(a=>a==='yes').length;
-    const som    = qAns.filter(a=>a==='sometimes').length;
+    const som    = qAns.filter(a=>a==='maybe').length;
     const no     = qAns.filter(a=>a==='no').length;
     const pctY   = Math.round(yes/total*100);
     const pctS   = Math.round(som/total*100);
@@ -433,7 +433,7 @@ function renderQuestions(rows) {
         <div class="q-text">${weak}<strong>Q${q+1}.</strong> ${QLABELS[q]}</div>
         <div class="q-bars">
           <div class="q-bar-yes"    style="flex:${pctY}"></div>
-          <div class="q-bar-sometimes" style="flex:${pctS}"></div>
+          <div class="q-bar-maybe" style="flex:${pctS}"></div>
           <div class="q-bar-no"    style="flex:${pctN}"></div>
         </div>
         <div class="q-legend">
