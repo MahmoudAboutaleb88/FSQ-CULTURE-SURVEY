@@ -72,25 +72,28 @@ body {
 .header-topbar {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 20px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--grey-border);
   background: var(--white);
   direction: ltr;
-  flex-wrap: wrap;
+  position: relative;
 }
 .header-logo {
   height: 56px;
   max-width: 180px;
   object-fit: contain;
-  object-position: center;
+  object-position: left center;
   flex-shrink: 0;
 }
 .header-titles {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   direction: ltr;
-  flex-shrink: 0;
+  pointer-events: none;
 }
 .header-company {
   font-size: 11px;
@@ -117,15 +120,21 @@ body {
 @media (max-width: 600px) {
   .header-topbar {
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
     padding: 16px 12px;
+    position: static;
+  }
+  .header-titles {
+    position: static;
+    transform: none;
+    text-align: center;
   }
   .header-logo {
     height: 52px;
     max-width: 160px;
-  }
-  .header-titles {
-    text-align: center;
+    object-position: center;
   }
 }
 
