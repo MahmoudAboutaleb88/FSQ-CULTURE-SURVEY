@@ -57,7 +57,7 @@
     <span class="pill-count" id="pill-count">0 / 25</span>
   </div>
 
-  <div class="progress-wrap">
+  <div class="progress-wrap" aria-hidden="true">
     <div class="progress-row">
       <span class="progress-label">التقدم / Progress</span>
       <span class="progress-count" id="prog-count">0 / 25</span>
@@ -220,7 +220,7 @@ function buildSurvey() {
           <button class="answer-btn" onclick="pick(${i},'sometimes')"><img src="maybe.png" class="ans-icon" alt="أحياناً"/><br>أحياناً<br><small>Sometimes</small></button>
           <button class="answer-btn" onclick="pick(${i},'no')"><img src="false.png" class="ans-icon" alt="لا"/><br>لا<br><small>No</small></button>
         </div>`;
-      d.style.animationDelay = `${idx * 35}ms`;
+      d.style.animationDelay = `${i * 35}ms`;
       c.appendChild(d);
     });
   });
@@ -303,6 +303,8 @@ async function doLogin() {
       currentUser = { id: data.id, name: data.name, dept: data.dept };
       document.getElementById('disp-name').textContent = data.name;
       document.getElementById('disp-dept').textContent = data.dept;
+      const avatar = document.getElementById('disp-avatar');
+      if (avatar) avatar.textContent = data.name ? data.name.trim()[0].toUpperCase() : '👤';
       answers = {};
       buildSurvey();
       showScreen('screen-survey');
