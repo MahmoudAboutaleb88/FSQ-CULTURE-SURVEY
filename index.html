@@ -331,13 +331,55 @@ function openSummaryModal() {
     return;
   }
 
-  const pct = Math.round((yes / TOTAL) * 100);
+  // ── الامتثال الكلي: نعم=100، أحياناً=50، لا=0
+  const totalScore = (yes * 100 + sometimes * 50) / TOTAL;
+  const pct = Math.round(totalScore);
+
+  // ── نسبة كل محور
+  const THRESHOLD = 75;
+  let secIdx = 0;
+  let sectionRows = '';
+  let weakSections = [];
+
+  SECTIONS.forEach(sec => {
+    const count = sec.qs.length;
+    let score = 0;
+    for (let i = secIdx; i < secIdx + count; i++) {
+      if (answers[i] === 'yes')       score += 100;
+      else if (answers[i] === 'sometimes') score += 50;
+    }
+    const secPct = Math.round(score / count);
+    const weak = secPct < THRESHOLD;
+    if (weak) weakSections.push(sec.ar);
+    const color = secPct >= 75 ? 'var(--lime-dark)' : secPct >= 50 ? 'var(--orange)' : 'var(--danger)';
+    const fillColor = secPct >= 75 ? 'var(--lime)' : secPct >= 50 ? 'var(--orange)' : 'var(--danger)';
+    sectionRows += `
+      <div class="sec-summary-row">
+        <div class="sec-summary-top">
+          <span class="sec-summary-name">${sec.ar}</span>
+          <span class="sec-summary-pct" style="color:${color}">${secPct}%${weak ? ' ⚠️' : ' ✓'}</span>
+        </div>
+        <div class="sec-summary-bar-bg">
+          <div class="sec-summary-bar-fill" style="width:${secPct}%;background:${fillColor}"></div>
+        </div>
+      </div>`;
+    secIdx += count;
+  });
+
+  const weakNote = weakSections.length > 0
+    ? `<div class="summary-weak-note">⚠️ تحتاج تحسين: ${weakSections.join(' — ')}</div>`
+    : `<div class="summary-weak-note summary-all-good">✅ جميع المحاور فوق 75% — أداء ممتاز!</div>`;
+
   document.getElementById('modal-summary').innerHTML = `
     <div class="summary-row"><span class="summary-dot dot-yes"></span><span>نعم / Yes</span><strong>${yes}</strong></div>
     <div class="summary-row"><span class="summary-dot dot-sometimes"></span><span>أحياناً / Sometimes</span><strong>${sometimes}</strong></div>
     <div class="summary-row"><span class="summary-dot dot-no"></span><span>لا / No</span><strong>${no}</strong></div>
     <div class="summary-divider"></div>
-    <div class="summary-score">نسبة الامتثال / Compliance: <strong>${pct}%</strong></div>`;
+    <div class="summary-score">نسبة الامتثال / Compliance: <strong>${pct}%</strong></div>
+    <div class="summary-divider"></div>
+    <div class="sec-summary-list">${sectionRows}</div>
+    ${weakNote}`;
+
   document.getElementById('modal-overlay').classList.add('active');
 }
 
