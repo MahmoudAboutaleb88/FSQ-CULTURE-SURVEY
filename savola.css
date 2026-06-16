@@ -640,16 +640,8 @@ tr:nth-child(even) td { background: var(--off-white); }
   animation: btnPop .3s ease;
 }
 
-/* 3. Slide-in border from right */
-@keyframes borderSlide {
-  from { border-right-width: 0px; }
-  to   { border-right-width: 4px; }
-}
-.question-card.answered-yes,
-.question-card.answered-sometimes,
-.question-card.answered-no {
-  animation: borderSlide .25s ease;
-}
+/* 3. Border color transition handled by CSS transition on .question-card */
+/* border-right-color transition: .2s already defined on .question-card */
 
 /* 4. Success screen scale-in */
 @keyframes scaleIn {
