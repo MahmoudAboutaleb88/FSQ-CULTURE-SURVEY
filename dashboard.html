@@ -81,7 +81,7 @@
         <canvas id="ring-chart" width="140" height="140"></canvas>
         <div class="score-center">
           <div class="score-pct" id="ring-pct">—</div>
-          <div class="score-lbl">نعم / Yes</div>
+          <div class="score-lbl">الامتثال / Compliance</div>
         </div>
       </div>
       <div class="score-badges">
@@ -260,14 +260,17 @@ function renderKPI(rows) {
   const allAns = rows.flatMap(r => r.answers);
   const yes = allAns.filter(a => a==='yes').length;
   const total = allAns.length;
-  const pct = total ? Math.round(yes/total*100) : 0;
+  const som  = allAns.filter(a=>a==='maybe'||a==='sometimes').length;
+  const pct = total ? Math.round((yes*100 + som*50) / total) : 0;
 
   // weak: questions where yes < 60%
   let weak = 0;
   for (let q = 0; q < TOTAL_Q; q++) {
     const qAns = rows.map(r => r.answers[q]).filter(Boolean);
     const qYes = qAns.filter(a => a==='yes').length;
-    if (qAns.length && qYes/qAns.length < 0.6) weak++;
+    const qSom = qAns.filter(a => a==='maybe'||a==='sometimes').length;
+    const qPct = qAns.length ? Math.round((qYes*100 + qSom*50) / qAns.length) : 0;
+    if (qAns.length && qPct < 75) weak++;
   }
 
   document.getElementById('kpi-total').textContent  = rows.length;
@@ -287,7 +290,8 @@ function renderOverall(rows) {
   const pctS = Math.round(som/total*100);
   const pctN = Math.round(no/total*100);
 
-  document.getElementById('ring-pct').textContent      = pctY + '%';
+  const compliance = Math.round((yes*100 + som*50) / total);
+  document.getElementById('ring-pct').textContent      = compliance + '%';
   document.getElementById('pct-yes').textContent       = pctY + '%';
   document.getElementById('pct-maybe').textContent = pctS + '%';
   document.getElementById('pct-no').textContent        = pctN + '%';
@@ -311,7 +315,8 @@ function renderSectionBars(rows) {
     const secAns = rows.flatMap(r => r.answers.slice(qStart, qStart + sec.count));
     const total  = secAns.length || 1;
     const yes    = secAns.filter(a=>a==='yes').length;
-    const pct    = Math.round(yes/total*100);
+    const som    = secAns.filter(a=>a==='maybe'||a==='sometimes').length;
+    const pct    = Math.round((yes*100 + som*50) / total);
     const color  = pct>=75 ? '#52b788' : pct>=50 ? '#f4a261' : '#d62828';
     wrap.innerHTML += `
       <div class="sec-bar-row">
@@ -331,11 +336,15 @@ function renderSectionBars(rows) {
 function renderDeptChart(rows) {
   const deptMap = {};
   rows.forEach(r => {
-    if (!deptMap[r.dept]) deptMap[r.dept] = { yes:0, total:0 };
-    r.answers.forEach(a => { deptMap[r.dept].total++; if(a==='yes') deptMap[r.dept].yes++; });
+    if (!deptMap[r.dept]) deptMap[r.dept] = { yes:0, som:0, total:0 };
+    r.answers.forEach(a => {
+      deptMap[r.dept].total++;
+      if(a==='yes') deptMap[r.dept].yes++;
+      else if(a==='maybe'||a==='sometimes') deptMap[r.dept].som++;
+    });
   });
   const labels = Object.keys(deptMap);
-  const values = labels.map(d => Math.round(deptMap[d].yes / (deptMap[d].total||1) * 100));
+  const values = labels.map(d => Math.round((deptMap[d].yes*100 + deptMap[d].som*50) / (deptMap[d].total||1)));
   const colors = values.map(v => v>=75?'#52b788':v>=50?'#f4a261':'#d62828');
 
   if (deptChart) deptChart.destroy();
@@ -416,7 +425,8 @@ function renderQuestions(rows) {
     const pctY   = Math.round(yes/total*100);
     const pctS   = Math.round(som/total*100);
     const pctN   = Math.round(no/total*100);
-    const weak   = pctY < 60 ? '⚠️ ' : '';
+    const compliance = Math.round((yes*100 + som*50) / total);
+    const weak   = compliance < 75 ? '⚠️ ' : '';
 
     wrap.innerHTML += `
       <div class="q-row">
@@ -442,8 +452,12 @@ function renderTrend(rows) {
     if (!r.timestamp) return;
     const d   = new Date(r.timestamp);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    if (!byMonth[key]) byMonth[key] = { yes:0, total:0 };
-    r.answers.forEach(a => { byMonth[key].total++; if(a==='yes') byMonth[key].yes++; });
+    if (!byMonth[key]) byMonth[key] = { yes:0, som:0, total:0 };
+    r.answers.forEach(a => {
+      byMonth[key].total++;
+      if(a==='yes') byMonth[key].yes++;
+      else if(a==='maybe'||a==='sometimes') byMonth[key].som++;
+    });
   });
   const keys   = Object.keys(byMonth).sort();
   const labels = keys.map(k => {
@@ -451,7 +465,7 @@ function renderTrend(rows) {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return `${months[parseInt(m)-1]} ${y}`;
   });
-  const values = keys.map(k => Math.round(byMonth[k].yes/(byMonth[k].total||1)*100));
+  const values = keys.map(k => Math.round((byMonth[k].yes*100 + byMonth[k].som*50)/(byMonth[k].total||1)));
 
   if (trendChart) trendChart.destroy();
   const trendEl = document.getElementById('trend-chart');
@@ -488,7 +502,8 @@ function renderRecent(rows) {
   if (!sorted.length) { wrap.innerHTML = '<div class="trend-empty">لا توجد بيانات / No data</div>'; return; }
   wrap.innerHTML = sorted.map(r => {
     const yes  = r.answers.filter(a=>a==='yes').length;
-    const pct  = Math.round(yes/TOTAL_Q*100);
+    const sometimes = r.answers.filter(a=>a==='sometimes').length;
+    const pct  = Math.round((yes * 100 + sometimes * 50) / TOTAL_Q);
     const cls  = pct>=75?'score-high':pct>=50?'score-mid':'score-low';
     const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString('ar-EG') : '—';
     return `<div class="resp-item">
