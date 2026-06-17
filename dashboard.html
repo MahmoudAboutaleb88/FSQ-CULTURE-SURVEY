@@ -130,19 +130,12 @@
 
 </div><!-- /main -->
 
+<script src="data.js"></script>
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziGLb3-7pNXPYEij908d_7bVekjvcZooH5yE_kWc48oF4yA9i-E9MywxJ5ccdUdW6T8g/exec";
 
-const SECTIONS = [
-  { ar:"القيادة والالتزام",          en:"Leadership & Commitment",        count:5 },
-  { ar:"التواصل والإبلاغ",           en:"Communication & Reporting",      count:2 },
-  { ar:"التدريب والكفاءة",           en:"Training & Competency",          count:4 },
-  { ar:"السلوك الشخصي والمسؤولية",  en:"Personal Behaviour",             count:4 },
-  { ar:"الإجراءات وبيئة العمل",      en:"Procedures & Environment",       count:3 },
-  { ar:"الموارد والبنية التحتية",    en:"Resources & Infrastructure",     count:4 },
-  { ar:"التحسين المستمر",            en:"Continuous Improvement",         count:3 },
-];
-const TOTAL_Q = 25;
+// SECTIONS، TOTAL_Q، QLABELS معرّفين في data.js
+// sec.count متاح عبر sec.qs.length
 
 let allData = [];
 let ringChart, deptChart, trendChart;
@@ -312,7 +305,7 @@ function renderSectionBars(rows) {
   wrap.innerHTML = '';
   let qStart = 0;
   SECTIONS.forEach(sec => {
-    const secAns = rows.flatMap(r => r.answers.slice(qStart, qStart + sec.count));
+    const secAns = rows.flatMap(r => r.answers.slice(qStart, qStart + sec.qs.length));
     const total  = secAns.length || 1;
     const yes    = secAns.filter(a=>a==='yes').length;
     const som    = secAns.filter(a=>a==='maybe'||a==='sometimes').length;
@@ -328,7 +321,7 @@ function renderSectionBars(rows) {
           <div class="sec-bar-fill" style="width:${pct}%;background:${color}"></div>
         </div>
       </div>`;
-    qStart += sec.count;
+    qStart += sec.qs.length;
   });
 }
 
@@ -388,33 +381,7 @@ function renderQuestions(rows) {
   const wrap = document.getElementById('q-breakdown');
   wrap.innerHTML = '';
 
-  const QLABELS = [
-    "تُظهر الإدارة التزامًا واضحًا بالجودة وسلامة الغذاء",
-    "أفهم رؤية الشركة وأهدافها فيما يتعلق بالجودة وسلامة الغذاء",
-    "يحرص القادة على أهمية إنتاج منتجات آمنة وعالية الجودة",
-    "تستجيب الإدارة بسرعة عند طرح مخاوف الجودة أو سلامة الغذاء",
-    "يتم توصيل معلومات الجودة وسلامة الغذاء بوضوح وفي الوقت المناسب",
-    "أشعر بالراحة عند الإبلاغ عن مشكلات سلامة الغذاء",
-    "يتم توضيح توقعات الجودة وسلامة الغذاء في عملي بوضوح",
-    "تلقيت تدريبًا كافيًا لأداء عملي بأمان",
-    "المواد التدريبية واضحة ومرتبطة بالعمل وعملية",
-    "أعرف كيفية التعرف على مخاطر الجودة أو سلامة الغذاء والإبلاغ عنها",
-    "أتلقى تدريبًا تنشيطيًا عند حدوث تغييرات",
-    "أشعر بمسؤولية شخصية تجاه الجودة وسلامة الغذاء",
-    "ألتزم دائمًا بقواعد النظافة وممارسات التصنيع الجيدة",
-    "أتخذ إجراءً فوريًا عند ملاحظة أي خطر محتمل",
-    "أشعر بالتشجيع على طرح أفكار لتحسين الجودة وسلامة الغذاء",
-    "إجراءات التشغيل القياسية في منطقتي واضحة وسهلة التطبيق",
-    "ألتزم بإجراءات التشغيل القياسية حتى عند العمل تحت الضغط",
-    "يتم التعامل مع عدم الالتزام بقواعد سلامة الغذاء بشكل عادل",
-    "الأدوات والمعدات اللازمة للعمل بأمان متوفرة وفي حالة جيدة",
-    "بيئة عملي نظيفة ومنظمة وتدعم ممارسات النظافة الجيدة",
-    "تتوفر الموارد اللازمة للحفاظ على الجودة وسلامة الغذاء",
-    "يتم التعامل بسرعة مع مشكلات الصيانة المؤثرة على السلامة",
-    "يتم مشاركة الدروس المستفادة من الحوادث مع الموظفين",
-    "ألاحظ وجود مبادرات للتحسين المستمر في الجودة وسلامة الغذاء",
-    "أعتقد أن الشركة ملتزمة بالتحسين المستمر على المدى الطويل",
-  ];
+  // QLABELS معرّفة في data.js
 
   for (let q = 0; q < TOTAL_Q; q++) {
     const qAns   = rows.map(r => r.answers[q]).filter(Boolean);
