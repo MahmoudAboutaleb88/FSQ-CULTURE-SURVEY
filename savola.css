@@ -791,3 +791,64 @@ tr:nth-child(even) td { background: var(--off-white); }
   border-right-color: var(--lime);
 }
 
+/* ══════════════════════════════════════
+   DASHBOARD RESPONSIVE
+   ══════════════════════════════════════ */
+
+/* Desktop: filter bar in a row */
+@media (min-width: 601px) {
+  .filter-bar {
+    flex-direction: row;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .filter-bar > div { flex: 1; min-width: 120px; }
+  .btn-refresh { width: auto; padding: 11px 20px; flex-shrink: 0; }
+
+  /* KPI 4 columns on desktop */
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+
+  /* Score wrap row on desktop */
+  .score-wrap { flex-direction: row; align-items: center; justify-content: center; gap: 32px; }
+
+  /* Taller charts on desktop */
+  .chart-wrap { height: 280px; }
+
+  /* Main wider padding */
+  .main { padding: 20px 24px 60px; }
+}
+
+/* Mobile fixes */
+@media (max-width: 600px) {
+  /* KPI 2x2 already set, just ensure text fits */
+  .kpi-val { font-size: 22px; }
+  .kpi-label { font-size: 10px; }
+
+  /* Score ring smaller on mobile */
+  .score-ring-wrap canvas { width: 120px !important; height: 120px !important; }
+  .score-pct { font-size: 20px; }
+
+  /* Section bars label truncate */
+  .sec-bar-name { font-size: 11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Q breakdown text */
+  .q-text { font-size: 11px; }
+  .q-legend { flex-wrap: wrap; gap: 4px; }
+
+  /* Recent responses */
+  .resp-dept { font-size: 12px; }
+
+  /* Suggestion cards */
+  .sugg-meta { flex-direction: column; gap: 2px; }
+
+  /* Charts */
+  .chart-wrap { height: 200px; }
+
+  /* Modal full width on mobile */
+  .modal-card { max-width: 100%; margin: 0 8px; }
+
+  /* Floating pill closer to bottom nav */
+  .progress-pill { bottom: 14px; }
+}
+
