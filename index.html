@@ -122,6 +122,7 @@
    ضع هنا رابط Apps Script Web App
    ══════════════════════════════════════════════ */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziGLb3-7pNXPYEij908d_7bVekjvcZooH5yE_kWc48oF4yA9i-E9MywxJ5ccdUdW6T8g/exec";
+const CLIENT_TOKEN = "fsq-usce-2026"; // يتحقق منه Apps Script
 /* ══════════════════════════════════════════════ */
 
 const SECTIONS = [
@@ -270,7 +271,7 @@ async function doLogin() {
 
   try {
     // نبعت GET request — Apps Script بيرد بـ JSON
-    const url = `${APPS_SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}`;
+    const url = `${APPS_SCRIPT_URL}?action=login&id=${encodeURIComponent(id)}&token=${CLIENT_TOKEN}`;
     const res = await fetch(url, {
       method: 'GET',
       redirect: 'follow',   // ← مهم جداً يتبع الـ redirect
@@ -422,6 +423,7 @@ async function doSubmit() {
 
   const payload = {
     action:     'submit',
+    token:      CLIENT_TOKEN,
     id:         currentUser.id,
     name:       currentUser.name,
     dept:       currentUser.dept,
