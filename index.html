@@ -117,6 +117,7 @@
   </div>
 </div>
 
+<script src="data.js"></script>
 <script>
 /* ══════════════════════════════════════════════
    ضع هنا رابط Apps Script Web App
@@ -125,51 +126,8 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziGLb3-7pNXPYE
 const CLIENT_TOKEN = "fsq-usce-2026"; // يتحقق منه Apps Script
 /* ══════════════════════════════════════════════ */
 
-const SECTIONS = [
-  { ar:"القيادة والالتزام", en:"Leadership & Commitment", qs:[
-    {ar:"تُظهر الإدارة التزامًا واضحًا وملموسًا بالجودة وسلامة الغذاء.",en:"Management demonstrates a visible commitment to quality and food safety."},
-    {ar:"أفهم رؤية الشركة وأهدافها فيما يتعلق بالجودة وسلامة الغذاء.",en:"I understand the company's quality and food safety vision and objectives."},
-    {ar:"يحرص القادة على التأكيد على أهمية إنتاج منتجات آمنة وعالية الجودة.",en:"Leaders communicate the importance of producing safe, high-quality products."},
-    {ar:"تستجيب الإدارة بسرعة عند طرح أي مخاوف تتعلق بالجودة أو سلامة الغذاء.",en:"Management responds promptly when quality or food safety concerns are raised."},
-    {ar:"يتم توصيل المعلومات المتعلقة بالجودة وسلامة الغذاء بوضوح وفي الوقت المناسب.",en:"Information related to quality and food safety is communicated clearly and on time."},
-  ]},
-  { ar:"التواصل والإبلاغ", en:"Communication & Reporting", qs:[
-    {ar:"أشعر بالراحة عند الإبلاغ عن مشكلات سلامة الغذاء دون الخوف من أي عواقب سلبية.",en:"I feel comfortable reporting food safety issues without fear of negative consequences."},
-    {ar:"يتم توضيح التوقعات المتعلقة بالجودة وسلامة الغذاء في عملي بشكل واضح.",en:"Expectations for quality and food safety in my job are clearly communicated."},
-  ]},
-  { ar:"التدريب والكفاءة", en:"Training & Competency", qs:[
-    {ar:"تلقيت تدريبًا كافيًا لأداء عملي بأمان وصحة.",en:"I received sufficient training to perform my job safely and correctly."},
-    {ar:"المواد التدريبية واضحة ومرتبطة بالعمل وعملية في تطبيقها.",en:"Training materials are clear, relevant, and practical."},
-    {ar:"أعرف كيفية التعرف على مخاطر الجودة أو سلامة الغذاء والإبلاغ عنها.",en:"I know how to identify and report a quality or food safety hazard."},
-    {ar:"أتلقى تدريبًا تنشيطيًا عند حدوث تغييرات أو عند الحاجة.",en:"I receive refresher training when changes occur or when needed."},
-  ]},
-  { ar:"السلوك الشخصي والمسؤولية", en:"Personal Behaviour & Accountability", qs:[
-    {ar:"أشعر بمسؤولية شخصية تجاه الجودة وسلامة الغذاء.",en:"I feel personally responsible for quality and food safety."},
-    {ar:"ألتزم دائمًا باتباع قواعد النظافة وممارسات التصنيع الجيدة وقواعد سلامة الغذاء أثناء العمل.",en:"I always follow hygiene, GMP, and food safety rules while working."},
-    {ar:"أتخذ إجراءً فوريًا عند ملاحظة أي خطر محتمل.",en:"I take immediate action if I notice a potential hazard."},
-    {ar:"أشعر بالتشجيع على طرح أفكار لتحسين الجودة وسلامة الغذاء.",en:"I feel encouraged to share improvement ideas related to quality and food safety."},
-  ]},
-  { ar:"الإجراءات وبيئة العمل", en:"Procedures & Work Environment", qs:[
-    {ar:"إجراءات التشغيل القياسية والإجراءات في منطقتي واضحة وسهلة التطبيق.",en:"The SOPs and procedures in my area are clear and easy to follow."},
-    {ar:"ألتزم بإجراءات التشغيل القياسية حتى عند العمل تحت الضغط.",en:"I follow SOPs even when working under pressure."},
-    {ar:"يتم التعامل مع حالات عدم الالتزام بقواعد سلامة الغذاء بشكل عادل ومتسق.",en:"Non-compliance with food safety rules is handled fairly and consistently."},
-  ]},
-  { ar:"الموارد والبنية التحتية", en:"Resources & Infrastructure", qs:[
-    {ar:"الأدوات والمعدات اللازمة للعمل بأمان متوفرة وفي حالة جيدة.",en:"The tools and equipment I need to work safely are available and in good condition."},
-    {ar:"بيئة عملي نظيفة ومنظمة وتدعم ممارسات النظافة الجيدة.",en:"My workplace is clean, organized, and supports good hygiene practices."},
-    {ar:"تتوفر لدي الموارد اللازمة (معدات الوقاية الشخصية، الأدوات، مواد التنظيف) للحفاظ على الجودة وسلامة الغذاء.",en:"I have the necessary resources (PPE, tools, cleaning materials) to maintain quality and food safety."},
-    {ar:"يتم التعامل بسرعة مع مشكلات الصيانة التي قد تؤثر على الجودة أو السلامة.",en:"Maintenance issues that may impact quality or safety are resolved promptly."},
-  ]},
-  { ar:"التحسين المستمر", en:"Continuous Improvement", qs:[
-    {ar:"يتم مشاركة الدروس المستفادة من الحوادث أو الحوادث الوشيكة مع الموظفين.",en:"Lessons learned from incidents or near-misses are communicated to employees."},
-    {ar:"ألاحظ وجود مبادرات للتحسين المستمر في مجال الجودة وسلامة الغذاء.",en:"I observe continuous improvement initiatives related to quality and food safety."},
-    {ar:"أعتقد أن الشركة ملتزمة بالتحسين المستمر على المدى الطويل في الجودة وسلامة الغذاء.",en:"I believe the company is committed to long-term improvement in quality and food safety."},
-  ]},
-];
-
-const ALL_Q = [];
-SECTIONS.forEach(s => s.qs.forEach(q => ALL_Q.push(q)));
-const TOTAL = ALL_Q.length;
+// SECTIONS، TOTAL_Q، QLABELS معرّفين في data.js
+const TOTAL = TOTAL_Q;
 
 let answers = {};
 let currentUser = {};
