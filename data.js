@@ -63,3 +63,6 @@ const TOTAL_Q = SECTIONS.reduce((s, sec) => s + sec.qs.length, 0);
 
 // QLABELS مستخرجة تلقائياً من SECTIONS
 const QLABELS = SECTIONS.flatMap(sec => sec.qs.map(q => q.ar));
+
+// حد التقييم — عدّله هنا بس لو احتجت تغييره
+const THRESHOLD = 75;
