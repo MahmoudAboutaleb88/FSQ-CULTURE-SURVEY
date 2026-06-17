@@ -85,6 +85,7 @@
         </div>
       </div>
       <div class="score-badges">
+        <div class="badges-label">توزيع الإجابات / Answer Distribution</div>
         <span class="badge badge-yes">✅ نعم: <span id="pct-yes">—</span></span>
         <span class="badge badge-maybe">🔶 أحياناً: <span id="pct-maybe">—</span></span>
         <span class="badge badge-no">❌ لا: <span id="pct-no">—</span></span>
@@ -263,7 +264,7 @@ function renderKPI(rows) {
     const qYes = qAns.filter(a => a==='yes').length;
     const qSom = qAns.filter(a => a==='maybe'||a==='sometimes').length;
     const qPct = qAns.length ? Math.round((qYes*100 + qSom*50) / qAns.length) : 0;
-    if (qAns.length && qPct < 75) weak++;
+    if (qAns.length && qPct < THRESHOLD) weak++;
   }
 
   document.getElementById('kpi-total').textContent  = rows.length;
@@ -310,7 +311,7 @@ function renderSectionBars(rows) {
     const yes    = secAns.filter(a=>a==='yes').length;
     const som    = secAns.filter(a=>a==='maybe'||a==='sometimes').length;
     const pct    = Math.round((yes*100 + som*50) / total);
-    const color  = pct>=75 ? '#52b788' : pct>=50 ? '#f4a261' : '#d62828';
+    const color  = pct>=THRESHOLD ? '#52b788' : pct>=50 ? '#f4a261' : '#d62828';
     wrap.innerHTML += `
       <div class="sec-bar-row">
         <div class="sec-bar-header">
@@ -338,7 +339,7 @@ function renderDeptChart(rows) {
   });
   const labels = Object.keys(deptMap);
   const values = labels.map(d => Math.round((deptMap[d].yes*100 + deptMap[d].som*50) / (deptMap[d].total||1)));
-  const colors = values.map(v => v>=75?'#52b788':v>=50?'#f4a261':'#d62828');
+  const colors = values.map(v => v>=THRESHOLD?'#52b788':v>=50?'#f4a261':'#d62828');
 
   if (deptChart) deptChart.destroy();
   deptChart = new Chart(document.getElementById('dept-chart'), {
@@ -365,7 +366,7 @@ function renderDeptChart(rows) {
           chart.data.datasets.forEach((dataset, i) => {
             chart.getDatasetMeta(i).data.forEach((bar, idx) => {
               const val = dataset.data[idx];
-              ctx2.fillStyle = val>=75?'#1a4731':val>=50?'#b36200':'#d62828';
+              ctx2.fillStyle = val>=THRESHOLD?'#1a4731':val>=50?'#b36200':'#d62828';
               ctx2.fillText(val+'%', bar.x, bar.y - 3);
             });
           });
@@ -393,7 +394,7 @@ function renderQuestions(rows) {
     const pctS   = Math.round(som/total*100);
     const pctN   = Math.round(no/total*100);
     const compliance = Math.round((yes*100 + som*50) / total);
-    const weak   = compliance < 75 ? '⚠️ ' : '';
+    const weak   = compliance < THRESHOLD ? '⚠️ ' : '';
 
     wrap.innerHTML += `
       <div class="q-row">
@@ -471,7 +472,7 @@ function renderRecent(rows) {
     const yes  = r.answers.filter(a=>a==='yes').length;
     const sometimes = r.answers.filter(a=>a==='sometimes').length;
     const pct  = Math.round((yes * 100 + sometimes * 50) / TOTAL_Q);
-    const cls  = pct>=75?'score-high':pct>=50?'score-mid':'score-low';
+    const cls  = pct>=THRESHOLD?'score-high':pct>=50?'score-mid':'score-low';
     const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString('ar-EG') : '—';
     return `<div class="resp-item">
       <div><div class="resp-dept">${r.dept||'—'}</div><div class="resp-date">${date}</div></div>
