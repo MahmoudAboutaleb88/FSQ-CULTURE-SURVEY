@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Dashboard – Food Safety Culture Survey</title>
   <link rel="stylesheet" href="savola.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" onerror="document.body.innerHTML='<div style=\'padding:20px;font-family:sans-serif;direction:rtl\'>⚠️ فشل تحميل مكتبة الرسوم البيانية. تحقق من الاتصال بالإنترنت.<br>Chart library failed to load. Please check your internet connection.</div>'"></script>
+<script src="data.js"></script>
 
 </head>
 <body>
@@ -85,7 +86,6 @@
         </div>
       </div>
       <div class="score-badges">
-        <div class="badges-label">توزيع الإجابات / Answer Distribution</div>
         <span class="badge badge-yes">✅ نعم: <span id="pct-yes">—</span></span>
         <span class="badge badge-maybe">🔶 أحياناً: <span id="pct-maybe">—</span></span>
         <span class="badge badge-no">❌ لا: <span id="pct-no">—</span></span>
@@ -131,9 +131,11 @@
 
 </div><!-- /main -->
 
-<script src="data.js"></script>
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziGLb3-7pNXPYEij908d_7bVekjvcZooH5yE_kWc48oF4yA9i-E9MywxJ5ccdUdW6T8g/exec";
+
+// helper: هل الإجابة "أحياناً" بأي صيغة
+const isSom = a => a === 'maybe' || a === 'sometimes';
 
 // SECTIONS، TOTAL_Q، QLABELS معرّفين في data.js
 // sec.count متاح عبر sec.qs.length
@@ -254,15 +256,24 @@ function renderKPI(rows) {
   const allAns = rows.flatMap(r => r.answers);
   const yes = allAns.filter(a => a==='yes').length;
   const total = allAns.length;
-  const som  = allAns.filter(a=>a==='maybe'||a==='sometimes').length;
+  const som  = allAns.filter(a=>isSom(a)).length;
   const pct = total ? Math.round((yes*100 + som*50) / total) : 0;
+
+  // تلوين كارد الامتثال
+  const scoreCard = document.getElementById('kpi-score').closest('.kpi-card');
+  if (scoreCard) {
+    scoreCard.className = 'kpi-card';
+    if (pct >= THRESHOLD) scoreCard.classList.add('kpi-score-high');
+    else if (pct >= 50)   scoreCard.classList.add('kpi-score-mid');
+    else                  scoreCard.classList.add('kpi-score-low');
+  }
 
   // weak: questions where yes < 60%
   let weak = 0;
   for (let q = 0; q < TOTAL_Q; q++) {
     const qAns = rows.map(r => r.answers[q]).filter(Boolean);
     const qYes = qAns.filter(a => a==='yes').length;
-    const qSom = qAns.filter(a => a==='maybe'||a==='sometimes').length;
+    const qSom = qAns.filter(a => isSom(a)).length;
     const qPct = qAns.length ? Math.round((qYes*100 + qSom*50) / qAns.length) : 0;
     if (qAns.length && qPct < THRESHOLD) weak++;
   }
@@ -278,7 +289,7 @@ function renderOverall(rows) {
   const allAns = rows.flatMap(r => r.answers);
   const total = allAns.length || 1;
   const yes  = allAns.filter(a=>a==='yes').length;
-  const som  = allAns.filter(a=>a==='maybe'||a==='sometimes').length;
+  const som  = allAns.filter(a=>isSom(a)).length;
   const no   = allAns.filter(a=>a==='no').length;
   const pctY = Math.round(yes/total*100);
   const pctS = Math.round(som/total*100);
@@ -303,16 +314,16 @@ function renderOverall(rows) {
 /* ── SECTION BARS ── */
 function renderSectionBars(rows) {
   const wrap = document.getElementById('section-bars');
-  wrap.innerHTML = '';
   let qStart = 0;
+  const secRows = [];
   SECTIONS.forEach(sec => {
     const secAns = rows.flatMap(r => r.answers.slice(qStart, qStart + sec.qs.length));
     const total  = secAns.length || 1;
     const yes    = secAns.filter(a=>a==='yes').length;
-    const som    = secAns.filter(a=>a==='maybe'||a==='sometimes').length;
+    const som    = secAns.filter(a=>isSom(a)).length;
     const pct    = Math.round((yes*100 + som*50) / total);
     const color  = pct>=THRESHOLD ? '#52b788' : pct>=50 ? '#f4a261' : '#d62828';
-    wrap.innerHTML += `
+    secRows.push(`
       <div class="sec-bar-row">
         <div class="sec-bar-header">
           <span class="sec-bar-name">${sec.ar}</span>
@@ -321,9 +332,10 @@ function renderSectionBars(rows) {
         <div class="sec-bar-bg">
           <div class="sec-bar-fill" style="width:${pct}%;background:${color}"></div>
         </div>
-      </div>`;
+      </div>`);
     qStart += sec.qs.length;
   });
+  wrap.innerHTML = secRows.join('');
 }
 
 /* ── DEPT CHART ── */
@@ -334,7 +346,7 @@ function renderDeptChart(rows) {
     r.answers.forEach(a => {
       deptMap[r.dept].total++;
       if(a==='yes') deptMap[r.dept].yes++;
-      else if(a==='maybe'||a==='sometimes') deptMap[r.dept].som++;
+      else if(isSom(a)) deptMap[r.dept].som++;
     });
   });
   const labels = Object.keys(deptMap);
@@ -380,23 +392,20 @@ function renderDeptChart(rows) {
 /* ── QUESTION BREAKDOWN ── */
 function renderQuestions(rows) {
   const wrap = document.getElementById('q-breakdown');
-  wrap.innerHTML = '';
-
   // QLABELS معرّفة في data.js
-
+  const qRows = [];
   for (let q = 0; q < TOTAL_Q; q++) {
     const qAns   = rows.map(r => r.answers[q]).filter(Boolean);
     const total  = qAns.length || 1;
     const yes    = qAns.filter(a=>a==='yes').length;
-    const som    = qAns.filter(a=>a==='maybe'||a==='sometimes').length;
+    const som    = qAns.filter(a=>isSom(a)).length;
     const no     = qAns.filter(a=>a==='no').length;
     const pctY   = Math.round(yes/total*100);
     const pctS   = Math.round(som/total*100);
     const pctN   = Math.round(no/total*100);
     const compliance = Math.round((yes*100 + som*50) / total);
     const weak   = compliance < THRESHOLD ? '⚠️ ' : '';
-
-    wrap.innerHTML += `
+    qRows.push(`
       <div class="q-row">
         <div class="q-text">${weak}<strong>Q${q+1}.</strong> ${QLABELS[q]}</div>
         <div class="q-bars">
@@ -409,8 +418,9 @@ function renderQuestions(rows) {
           <span class="q-leg-item"><span class="q-leg-dot" style="background:#f4a261"></span>أحياناً ${pctS}%</span>
           <span class="q-leg-item"><span class="q-leg-dot" style="background:#d62828"></span>لا ${pctN}%</span>
         </div>
-      </div>`;
+      </div>`);
   }
+  wrap.innerHTML = qRows.join('');
 }
 
 /* ── TREND ── */
@@ -424,7 +434,7 @@ function renderTrend(rows) {
     r.answers.forEach(a => {
       byMonth[key].total++;
       if(a==='yes') byMonth[key].yes++;
-      else if(a==='maybe'||a==='sometimes') byMonth[key].som++;
+      else if(isSom(a)) byMonth[key].som++;
     });
   });
   const keys   = Object.keys(byMonth).sort();
@@ -470,7 +480,7 @@ function renderRecent(rows) {
   if (!sorted.length) { wrap.innerHTML = '<div class="trend-empty">لا توجد بيانات / No data</div>'; return; }
   wrap.innerHTML = sorted.map(r => {
     const yes  = r.answers.filter(a=>a==='yes').length;
-    const sometimes = r.answers.filter(a=>a==='sometimes').length;
+    const sometimes = r.answers.filter(a=>isSom(a)).length;
     const pct  = Math.round((yes * 100 + sometimes * 50) / TOTAL_Q);
     const cls  = pct>=THRESHOLD?'score-high':pct>=50?'score-mid':'score-low';
     const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString('ar-EG') : '—';
@@ -503,7 +513,7 @@ function renderSuggestions(rows) {
 }
 
 /* ── HELPERS ── */
-function show(id){ document.getElementById(id).style.display='flex'; if(id==='main') document.getElementById(id).style.display='block'; }
+function show(id){ document.getElementById(id).style.display = id==='main' ? 'block' : 'flex'; }
 function hide(id){ document.getElementById(id).style.display='none'; }
 
 loadData();
