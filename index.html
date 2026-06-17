@@ -295,7 +295,7 @@ function openSummaryModal() {
   const pct = Math.round(totalScore);
 
   // ── نسبة كل محور
-  const THRESHOLD = 75;
+  // THRESHOLD معرّف في data.js
   let secIdx = 0;
   let sectionRows = '';
   let weakSections = [];
@@ -310,8 +310,8 @@ function openSummaryModal() {
     const secPct = Math.round(score / count);
     const weak = secPct < THRESHOLD;
     if (weak) weakSections.push(sec.ar);
-    const color = secPct >= 75 ? 'var(--lime-dark)' : secPct >= 50 ? 'var(--orange)' : 'var(--danger)';
-    const fillColor = secPct >= 75 ? 'var(--lime)' : secPct >= 50 ? 'var(--orange)' : 'var(--danger)';
+    const color = secPct >= THRESHOLD ? 'var(--lime-dark)' : secPct >= 50 ? 'var(--orange)' : 'var(--danger)';
+    const fillColor = secPct >= THRESHOLD ? 'var(--lime)' : secPct >= 50 ? 'var(--orange)' : 'var(--danger)';
     sectionRows += `
       <div class="sec-summary-row">
         <div class="sec-summary-top">
@@ -327,7 +327,7 @@ function openSummaryModal() {
 
   const weakNote = weakSections.length > 0
     ? `<div class="summary-weak-note">⚠️ تحتاج تحسين: ${weakSections.join(' — ')}</div>`
-    : `<div class="summary-weak-note summary-all-good">✅ جميع المحاور فوق 75% — أداء ممتاز!</div>`;
+    : `<div class="summary-weak-note summary-all-good">✅ جميع المحاور فوق ${THRESHOLD}% — أداء ممتاز!</div>`;
 
   document.getElementById('modal-summary').innerHTML = `
     <div class="summary-row"><span class="summary-dot dot-yes"></span><span>نعم / Yes</span><strong>${yes}</strong></div>
