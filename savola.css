@@ -857,3 +857,11 @@ tr:nth-child(even) td { background: var(--off-white); }
   .progress-pill { bottom: 14px; }
 }
 
+/* ── KPI Score Card Colors ── */
+.kpi-card.kpi-score-high { border-top-color: #52b788; }
+.kpi-card.kpi-score-mid  { border-top-color: var(--orange); }
+.kpi-card.kpi-score-low  { border-top-color: var(--danger); }
+.kpi-card.kpi-score-high .kpi-val { color: #1a4731; }
+.kpi-card.kpi-score-mid  .kpi-val { color: #7a4f00; }
+.kpi-card.kpi-score-low  .kpi-val { color: var(--danger); }
+
